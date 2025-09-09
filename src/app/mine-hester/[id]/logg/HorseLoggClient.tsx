@@ -38,7 +38,6 @@ export default function HorseLoggClient({
   categories: initialCategories,
 }: HorseLoggClientProps) {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedFilterCategories, setSelectedFilterCategories] = useState<Set<string>>(new Set());
   const [categories, setCategories] = useState(
     initialCategories.map((cat) => ({
@@ -146,11 +145,8 @@ export default function HorseLoggClient({
     "text-gray-600",
   ];
 
-  const handleAddLog = async (categoryId: string) => {
+  const handleAddLog = async () => {
     try {
-      // If no categoryId provided, use the first available category
-      const finalCategoryId = categoryId || categories[0]?.id || "";
-      setSelectedCategoryId(finalCategoryId);
       setIsLogModalOpen(true);
     } catch {
       toast.error("Kunne ikke åpne logg modal");
@@ -159,7 +155,6 @@ export default function HorseLoggClient({
 
   const closeLogModal = () => {
     setIsLogModalOpen(false);
-    setSelectedCategoryId(null);
   };
 
   const toggleCategoryFilter = (categoryId: string) => {
@@ -274,7 +269,7 @@ export default function HorseLoggClient({
                 <Button
                   size="sm"
                   className="text-white hover:bg-purple-700"
-                  onClick={() => handleAddLog("")}
+                   onClick={() => handleAddLog()}
                   data-cy="add-log-button"
                 >
                   <Plus className="h-4 w-4 mr-1" />
@@ -298,7 +293,7 @@ export default function HorseLoggClient({
           {loadingRecent && <p className="text-sm text-muted-foreground">Laster siste logger…</p>}
           {!loadingRecent && (recentLogs?.length ?? 0) === 0 && (
             <p className="text-sm text-muted-foreground">
-              Ingen logger enda. Trykk på &quot;Legg til logg&quot; for å komme i gang.
+              Ingen logger enda. Trykk på "Legg til logg" for å komme i gang.
             </p>
           )}
           <div className="space-y-2 sm:space-y-3">
@@ -365,7 +360,7 @@ export default function HorseLoggClient({
           horseId={horse.id}
           horseName={horse.name || "Hest"}
           logType="custom"
-          customCategoryId={selectedCategoryId!}
+          categories={categories}
           onLogCreated={handleLogCreated}
         />
       )}

@@ -1,10 +1,11 @@
 "use client";
 
+import { deleteHorseAction } from "@/app/actions/horse";
+import { HorsesWithOwner } from "@/app/mine-hester/page";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { deleteHorseAction } from "@/app/actions/horse";
-import { HORSE_GENDER_LABELS } from "@/types/horse";
 import { HorseGender } from "@/generated/prisma";
+import { HORSE_GENDER_LABELS } from "@/types/horse";
 import { Button } from "@mui/material";
 import { User } from "@supabase/supabase-js";
 import { FileText, Share, Trash2 } from "lucide-react";
@@ -12,7 +13,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { HorsesWithOwner } from "@/app/mine-hester/page";
 
 interface HorseCardProps {
   horse: HorsesWithOwner;
@@ -112,7 +112,9 @@ export function HorseCard({ horse, user }: Readonly<HorseCardProps>) {
             {horse.gender && (
               <div>
                 <span className="text-gray-600">Kjønn:</span>
-                <span className="ml-2 font-medium">{HORSE_GENDER_LABELS[horse.gender as HorseGender]}</span>
+                <span className="ml-2 font-medium">
+                  {HORSE_GENDER_LABELS[horse.gender as HorseGender]}
+                </span>
               </div>
             )}
             {horse.age && (
@@ -163,6 +165,7 @@ export function HorseCard({ horse, user }: Readonly<HorseCardProps>) {
               disabled={isDeleting}
               className="flex-1 h-12"
               startIcon={<Trash2 className="h-4 w-4" />}
+              data-cy={"slett-hest-knapp"}
             >
               {isDeleting ? "Sletter..." : "Slett"}
             </Button>

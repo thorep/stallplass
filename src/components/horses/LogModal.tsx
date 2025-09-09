@@ -5,9 +5,21 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UnifiedImageUpload, UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import { Modal } from "@/components/ui/modal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createCustomLogAction } from "@/app/actions/logs";
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string | null;
+  icon: string;
+  color: string;
+  isActive: boolean;
+  sortOrder: number;
+  _count?: { logs: number };
+}
 
 interface LogModalProps {
   isOpen: boolean;
@@ -15,7 +27,7 @@ interface LogModalProps {
   horseId: string;
   horseName: string;
   logType: "custom";
-  customCategoryId: string;
+  categories: Category[];
   onLogCreated?: () => void;
 }
 
@@ -25,15 +37,23 @@ export function LogModal({
   horseId,
   horseName,
   logType,
-  customCategoryId,
+  categories,
   onLogCreated,
 }: LogModalProps) {
   const [description, setDescription] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [images, setImages] = useState<string[]>([]);
   const [imageDescriptions, setImageDescriptions] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [, startTransition] = useTransition();
   const imageUploadRef = useRef<UnifiedImageUploadRef>(null);
+
+  // Set default category when modal opens
+  useEffect(() => {
+    if (isOpen && categories.length > 0 && !selectedCategoryId) {
+      setSelectedCategoryId(categories[0].id);
+    }
+  }, [isOpen, categories, selectedCategoryId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +63,7 @@ export function LogModal({
       return;
     }
 
-    if (!customCategoryId) {
+    if (!selectedCategoryId) {
       toast.error("Ingen kategori valgt");
       return;
     }
@@ -67,11 +87,12 @@ export function LogModal({
 
       startTransition(async () => {
         try {
-          await createCustomLogAction(horseId, customCategoryId || '', formData);
+          await createCustomLogAction(horseId, selectedCategoryId, formData);
           toast.success("Logg lagt til");
 
           // Reset form
           setDescription("");
+          setSelectedCategoryId("");
           setImages([]);
           setImageDescriptions({});
           onLogCreated?.();
@@ -108,6 +129,23 @@ export function LogModal({
           <p className="text-body-sm text-gray-600">
             Logg for: <span className="font-medium">{horseName}</span>
           </p>
+        </div>
+
+        {/* Category selection */}
+        <div className="space-y-2">
+          <Label htmlFor="category">Kategori *</Label>
+          <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
+            <SelectTrigger data-cy="category-select">
+              <SelectValue placeholder="Velg kategori" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Description */}

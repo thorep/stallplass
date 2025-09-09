@@ -162,15 +162,16 @@ FROM all_profiles ap
 WITH owner AS (
   SELECT id FROM profiles WHERE nickname = 'user1' LIMIT 1
  ), horse_data AS (
-   SELECT * FROM (
-     VALUES
-       ('Testhest', 'Norsk fjordhest', 7, 'Brun', 'VALLACH'::"HorseGender", 155.0, 450.0, 'Testhest for automatiserte tester uten kategorier'),
-       ('TesthestMedKategori', 'Norsk fjordhest', 8, 'Svart', 'HOPPE'::"HorseGender", 160.0, 480.0, 'Testhest for automatiserte tester med én kategori'),
-       ('TesthestBasicMobile', 'Norsk fjordhest', 6, 'Grå', 'VALLACH'::"HorseGender", 150.0, 440.0, 'Testhest for oppdatering av grunnleggende informasjon (mobile)'),
-       ('TesthestPhysicalMobile', 'Norsk fjordhest', 9, 'Hvit', 'HOPPE'::"HorseGender", 165.0, 490.0, 'Testhest for oppdatering av fysiske egenskaper (mobile)'),
-       ('TesthestBasicDesktop', 'Norsk fjordhest', 5, 'Fuks', 'VALLACH'::"HorseGender", 145.0, 430.0, 'Testhest for oppdatering av grunnleggende informasjon (desktop)'),
-       ('TesthestPhysicalDesktop', 'Norsk fjordhest', 10, 'Skimmel', 'HOPPE'::"HorseGender", 170.0, 500.0, 'Testhest for oppdatering av fysiske egenskaper (desktop)')
-   ) AS t(name, breed, age, color, gender, height, weight, description)
+    SELECT * FROM (
+      VALUES
+        ('Testhest', 'Norsk fjordhest', 7, 'Brun', 'VALLACH'::"HorseGender", 155.0, 450.0, 'Testhest for automatiserte tester uten kategorier'),
+        ('TesthestMedKategori', 'Norsk fjordhest', 8, 'Svart', 'HOPPE'::"HorseGender", 160.0, 480.0, 'Testhest for automatiserte tester med én kategori'),
+        ('TesthestBasicMobile', 'Norsk fjordhest', 6, 'Grå', 'VALLACH'::"HorseGender", 150.0, 440.0, 'Testhest for oppdatering av grunnleggende informasjon (mobile)'),
+        ('TesthestPhysicalMobile', 'Norsk fjordhest', 9, 'Hvit', 'HOPPE'::"HorseGender", 165.0, 490.0, 'Testhest for oppdatering av fysiske egenskaper (mobile)'),
+        ('TesthestBasicDesktop', 'Norsk fjordhest', 5, 'Fuks', 'VALLACH'::"HorseGender", 145.0, 430.0, 'Testhest for oppdatering av grunnleggende informasjon (desktop)'),
+        ('TesthestPhysicalDesktop', 'Norsk fjordhest', 10, 'Skimmel', 'HOPPE'::"HorseGender", 170.0, 500.0, 'Testhest for oppdatering av fysiske egenskaper (desktop)'),
+        ('TesthestSlett', 'Norsk fjordhest', 7, 'Brun', 'VALLACH'::"HorseGender", 155.0, 450.0, 'Testhest for sletting i automatiserte tester')
+    ) AS t(name, breed, age, color, gender, height, weight, description)
  )
 INSERT INTO horses (
   name,

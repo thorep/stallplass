@@ -2,6 +2,9 @@ function fillHorseForm(name: string) {
   cy.login();
   cy.visit("/mine-hester");
 
+  // Ensure we are on the correct page
+  cy.url({ timeout: 10000 }).should("include", "/mine-hester");
+
   // Open create modal
   cy.get('[data-cy="add-horse-button"]', { timeout: 20000 }).should("be.visible").click();
 

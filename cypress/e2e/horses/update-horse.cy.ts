@@ -2,6 +2,9 @@ function navigateToHorseDetail(horseName: string = "Testhest") {
   cy.login();
   cy.visit("/mine-hester");
 
+  // Ensure we are on the correct page
+  cy.url({ timeout: 10000 }).should("include", "/mine-hester");
+
   // Wait for horses to load
   cy.get('[data-cy="horses-grid"]', { timeout: 20000 }).should("be.visible");
 

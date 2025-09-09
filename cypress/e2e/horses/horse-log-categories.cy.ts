@@ -54,6 +54,9 @@ describe("horse-log-categories", () => {
     cy.login();
     cy.visit("/mine-hester");
 
+    // Ensure we are on the correct page
+    cy.url({ timeout: 10000 }).should("include", "/mine-hester");
+
     // Find the specific horse card with exact name "TesthestMedKategori" and click its "Vis" button
     cy.get('[data-cy="horse-name"]')
       .filter((_, element) => {
@@ -77,6 +80,9 @@ describe("horse-log-categories", () => {
     cy.login();
     cy.visit("/mine-hester");
 
+    // Ensure we are on the correct page
+    cy.url({ timeout: 10000 }).should("include", "/mine-hester");
+
     // Find the specific horse card with exact name "TesthestMedKategori" and click its "Vis" button
     cy.get('[data-cy="horse-name"]')
       .filter((_, element) => {
@@ -98,6 +104,9 @@ describe("horse-log-categories", () => {
   it("creates a new category on horse without categories", () => {
     cy.login();
     cy.visit("/mine-hester");
+
+    // Ensure we are on the correct page
+    cy.url({ timeout: 10000 }).should("include", "/mine-hester");
 
     // Find the specific horse card with exact name "Testhest" (the one without categories)
     cy.get('[data-cy="horse-name"]')
