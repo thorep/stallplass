@@ -231,22 +231,22 @@ export default function HorseLoggClient({
           <div className="mb-4">
             <div className="flex flex-wrap gap-2 items-center">
               {/* Filter chips */}
-              <Button
-                size="sm"
-                variant={selectedFilterCategories.size === 0 ? "secondary" : "outline"}
-                className="rounded-full px-3"
-                onClick={() => setSelectedFilterCategories(new Set())}
-              >
-                Alle
-              </Button>
+               <Button
+                 size="sm"
+                 variant={selectedFilterCategories.size === 0 ? "default" : "outline"}
+                 className="rounded-full px-3"
+                 onClick={() => setSelectedFilterCategories(new Set())}
+               >
+                 Alle
+               </Button>
               {categories.map((c) => (
-                <Button
-                  key={c.id}
-                  size="sm"
-                  variant={selectedFilterCategories.has(c.id) ? "secondary" : "outline"}
-                  className="rounded-full px-3"
-                  onClick={() => toggleCategoryFilter(c.id)}
-                >
+                 <Button
+                   key={c.id}
+                   size="sm"
+                   variant={selectedFilterCategories.has(c.id) ? "default" : "outline"}
+                   className="rounded-full px-3"
+                   onClick={() => toggleCategoryFilter(c.id)}
+                 >
                   {c.name}
                   <Badge variant="secondary" className="ml-2 text-[10px] px-1.5 py-0">
                     {c._count?.logs || 0}
