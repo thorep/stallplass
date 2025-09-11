@@ -25,11 +25,30 @@ import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { User } from "@supabase/supabase-js";
+
+
+interface BudgetItem {
+  budgetItemId: string;
+  title: string;
+  amount: number;
+  baseAmount: number;
+  category: string;
+  day: number;
+  month: string;
+  emoji?: string | null;
+  isRecurring: boolean;
+  hasOverride: boolean;
+}
+
+interface BudgetMonth {
+  month: string;
+  total: number;
+  items: BudgetItem[];
+}
 
 interface HorseBudgetClientProps {
   horseId: string;
-  budgetData: { months: any[] };
+  budgetData: { months: BudgetMonth[] };
   currentMonth: string;
 }
 
@@ -146,9 +165,9 @@ export default function HorseBudgetClient({
     try {
       // For now, we'll use a simple approach - in a full migration we'd fetch item details
       // For simplicity, we'll just open the edit dialog with basic info
-      const occs = thisMonth?.items.filter((x: any) => x.budgetItemId === itemId) || [];
+      const occs = thisMonth?.items.filter((x) => x.budgetItemId === itemId) || [];
       const occurrenceCount = occs.length;
-      const hasOverride = occs.some((x: any) => x.hasOverride);
+      const hasOverride = occs.some((x) => x.hasOverride);
 
       setSheet({
         open: true,

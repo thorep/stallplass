@@ -35,7 +35,7 @@ export default async function HorseDetailPage({ params }: HorseDetailPageProps) 
 
   // Check if user has access to this horse
   const isOwner = horse.ownerId === userData.user.id;
-  const hasAccess = isOwner || horse.horseShares.some((share: any) => share.sharedWithId === userData.user.id);
+  const hasAccess = isOwner || horse.horseShares.some((share) => share.sharedWithId === userData.user.id);
 
   if (!hasAccess) {
     notFound();

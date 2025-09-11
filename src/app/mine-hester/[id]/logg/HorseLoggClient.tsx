@@ -80,7 +80,7 @@ export default function HorseLoggClient({
     return true;
   };
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await fetch(`/api/horses/${horse.id}/categories`);
       if (response.ok) {
@@ -95,7 +95,7 @@ export default function HorseLoggClient({
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
-  };
+  }, [horse.id]);
 
   const handleCreateCategory = async () => {
     if (!categoryFormData.name.trim()) {
@@ -283,8 +283,8 @@ export default function HorseLoggClient({
           {canAddLogs() && categories.length === 0 && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-700">
-                Du må opprette minst én kategori før du kan legge til logger. Klikk på "Administrer
-                kategorier" for å komme i gang.
+                Du må opprette minst én kategori før du kan legge til logger. Klikk på &quot;Administrer
+                kategorier&quot; for å komme i gang.
               </p>
             </div>
           )}
@@ -293,7 +293,7 @@ export default function HorseLoggClient({
           {loadingRecent && <p className="text-sm text-muted-foreground">Laster siste logger…</p>}
           {!loadingRecent && (recentLogs?.length ?? 0) === 0 && (
             <p className="text-sm text-muted-foreground">
-              Ingen logger enda. Trykk på "Legg til logg" for å komme i gang.
+              Ingen logger enda. Trykk på &quot;Legg til logg&quot; for å komme i gang.
             </p>
           )}
           <div className="space-y-2 sm:space-y-3">

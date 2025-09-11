@@ -3,6 +3,7 @@
 import { requireAuth } from "@/lib/auth";
 import { createHorse, updateHorse, deleteHorse } from "@/services/horse-service";
 import { CreateHorseData, UpdateHorseData } from "@/types/horse";
+import { HorseGender } from "@/generated/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function createHorseAction(formData: FormData) {
@@ -46,7 +47,7 @@ export async function createHorseAction(formData: FormData) {
     breed: breed?.trim() || undefined,
     age: age ? parseInt(age) : undefined,
     color: color?.trim() || undefined,
-    gender: gender as any || undefined,
+    gender: gender as HorseGender || undefined,
     height: height ? parseInt(height) : undefined,
     weight: weight ? parseInt(weight) : undefined,
     images: parsedImages,
@@ -109,7 +110,7 @@ export async function updateHorseAction(formData: FormData) {
     breed: breed?.trim() || undefined,
     age: age ? parseInt(age) : undefined,
     color: color?.trim() || undefined,
-    gender: gender as any || undefined,
+    gender: gender as HorseGender || undefined,
     height: height ? parseInt(height) : undefined,
     weight: weight ? parseInt(weight) : undefined,
     images: parsedImages,
@@ -128,7 +129,7 @@ export async function updateHorseAction(formData: FormData) {
 }
 
 // Generic update horse action for simple field updates
-export async function updateHorseFieldAction(horseId: string, field: string, value: any) {
+export async function updateHorseFieldAction(horseId: string, field: string, value: unknown) {
   // Authenticate the request
   const authResult = await requireAuth();
   if (authResult instanceof Response) {

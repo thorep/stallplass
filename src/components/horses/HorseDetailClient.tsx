@@ -1,4 +1,6 @@
 "use client";
+import { updateHorseFieldAction } from "@/app/actions/horse";
+import InlineEditSection from "@/components/molecules/InlineEditSection";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -8,21 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
-import InlineEditSection from "@/components/molecules/InlineEditSection";
-import { updateHorseFieldAction } from "@/app/actions/horse";
-import { HORSE_GENDER_LABELS, UpdateHorseData, HorseWithOwner } from "@/types/horse";
-import {
-  Calendar,
-  FileText,
-  Heart,
-  Palette,
-  Ruler,
-  Weight,
-} from "lucide-react";
+import { HORSE_GENDER_LABELS, HorseWithOwner, UpdateHorseData } from "@/types/horse";
+import { User } from "@supabase/supabase-js";
+import { Calendar, FileText, Heart, Palette, Ruler, Weight } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { User } from "@supabase/supabase-js";
 
 interface HorseDetailClientProps {
   horse: HorseWithOwner;
@@ -116,14 +109,14 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
       // Convert image descriptions to array format
       const imageDescriptionsArray = finalImages.map((url) => imageDescriptions[url] || "");
 
-      await updateHorseFieldAction(horse.id, 'images', finalImages);
-      await updateHorseFieldAction(horse.id, 'imageDescriptions', imageDescriptionsArray);
+      await updateHorseFieldAction(horse.id, "images", finalImages);
+      await updateHorseFieldAction(horse.id, "imageDescriptions", imageDescriptionsArray);
 
       // Update local state
       setHorse((prev: HorseWithOwner) => ({
         ...prev,
         images: finalImages,
-        imageDescriptions: imageDescriptionsArray
+        imageDescriptions: imageDescriptionsArray,
       }));
 
       toast.success("Bildene ble oppdatert");
@@ -183,6 +176,22 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
       <div className="max-w-4xl mx-auto">
         {/* Header removed; tabs provide navigation */}
 
+        {/* Info Box */}
+        <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-body text-blue-800">
+            Vi utvikler Stallplass.no sammen med brukerne! Hvis det er noe du savner eller gjerne
+            vil ha, kan du skrive det i forumet vårt. Der samler vi innspill og forslag – og lager
+            fortløpende nye funksjoner basert på det dere ønsker dere.{" "}
+            <a
+              href="https://www.stallplass.no/forum/kategori/feil-og-forbedringer"
+              className="text-blue-600 underline hover:text-blue-800"
+            >
+              Skriv i forumet her
+            </a>{" "}
+            så skal vi utvikle det!
+          </p>
+        </div>
+
         {/* Horse Images - Editable */}
         <div className="mb-8">
           <InlineEditSection
@@ -233,20 +242,25 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
                           Flere bilder {(horse.images as string[]).length - 1}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {(horse.images as string[]).slice(1).map((imageUrl: string, index: number) => (
-                            <div key={index + 1} className="relative aspect-square rounded-lg overflow-hidden">
-                              <Image
-                                src={imageUrl}
-                                alt={
-                                  (horse.imageDescriptions?.[index + 1] as string) ||
-                                  `${horse.name} - bilde ${index + 2}`
-                                }
-                                fill
-                                className="object-cover hover:scale-105 transition-transform duration-300"
-                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 200px"
-                              />
-                            </div>
-                          ))}
+                          {(horse.images as string[])
+                            .slice(1)
+                            .map((imageUrl: string, index: number) => (
+                              <div
+                                key={index + 1}
+                                className="relative aspect-square rounded-lg overflow-hidden"
+                              >
+                                <Image
+                                  src={imageUrl}
+                                  alt={
+                                    (horse.imageDescriptions?.[index + 1] as string) ||
+                                    `${horse.name} - bilde ${index + 2}`
+                                  }
+                                  fill
+                                  className="object-cover hover:scale-105 transition-transform duration-300"
+                                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 200px"
+                                />
+                              </div>
+                            ))}
                         </div>
                       </div>
                     )}
@@ -257,7 +271,9 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
                       <div className="text-6xl mb-4">🐴</div>
                       <p className="text-body">Ingen bilder lagt til ennå</p>
                       {canEditImages() && (
-                        <p className="text-body-sm mt-2">Klikk &quot;Rediger&quot; for å legge til bilder</p>
+                        <p className="text-body-sm mt-2">
+                          Klikk &quot;Rediger&quot; for å legge til bilder
+                        </p>
                       )}
                     </div>
                   </div>
@@ -294,7 +310,9 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
             {editingSection === "header" ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Navn *</label>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">
+                    Navn *
+                  </label>
                   <Input
                     data-cy="horse-name-input"
                     value={String(editingData.name || "")}
@@ -383,7 +401,10 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
                     value={String(editingData.gender || "NONE")}
                     onValueChange={(value) => setEditingData({ ...editingData, gender: value })}
                   >
-                    <SelectTrigger data-cy="horse-gender-select" className="h-12 border-2 focus:border-blue-500">
+                    <SelectTrigger
+                      data-cy="horse-gender-select"
+                      className="h-12 border-2 focus:border-blue-500"
+                    >
                       <SelectValue placeholder="Velg kjønn" />
                     </SelectTrigger>
                     <SelectContent>
@@ -398,7 +419,9 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
                 </div>
 
                 <div>
-                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Alder (år)</label>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">
+                    Alder (år)
+                  </label>
                   <Input
                     data-cy="horse-age-input"
                     type="number"
@@ -423,7 +446,9 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
                 </div>
 
                 <div>
-                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Høyde (cm)</label>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">
+                    Høyde (cm)
+                  </label>
                   <Input
                     data-cy="horse-height-input"
                     type="number"
@@ -437,7 +462,9 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-body-sm font-medium text-gray-700 mb-2">Vekt (kg)</label>
+                  <label className="block text-body-sm font-medium text-gray-700 mb-2">
+                    Vekt (kg)
+                  </label>
                   <Input
                     data-cy="horse-weight-input"
                     type="number"
