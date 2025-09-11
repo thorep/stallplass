@@ -16,9 +16,10 @@ export interface CreateCustomCategoryData {
 }
 
 /**
- * Verify that the user owns the horse
+ * Verify that the user owns the horse or has access to it (shared)
  */
 async function verifyHorseOwnership(horseId: string, userId: string): Promise<boolean> {
+  // First check if user owns the horse
   const horse = await prisma.horses.findFirst({
     where: {
       id: horseId,
@@ -28,7 +29,19 @@ async function verifyHorseOwnership(horseId: string, userId: string): Promise<bo
     },
   });
 
-  return !!horse;
+  if (horse) {
+    return true;
+  }
+
+  // If not owner, check if horse is shared with user
+  const sharedHorse = await prisma.horse_shares.findFirst({
+    where: {
+      horseId: horseId,
+      sharedWithId: userId,
+    },
+  });
+
+  return !!sharedHorse;
 }
 
 // Care Log functions
@@ -842,10 +855,7 @@ export async function deleteCustomCategory(categoryId: string, userId: string) {
 
 // Custom Logs functions
 export async function getCustomLogsByCategoryId(categoryId: string, userId: string) {
-  // First verify the user owns the horse
-  console.log("!!!!!!!");
-  console.log(prisma);
-
+  // First verify the user owns the horse or has access to it (shared)
   const category = await prisma.custom_log_categories.findFirst({
     where: {
       id: categoryId,
@@ -855,12 +865,13 @@ export async function getCustomLogsByCategoryId(categoryId: string, userId: stri
     },
   });
 
-  if (
-    !category ||
-    category.horse.ownerId !== userId ||
-    category.horse.archived ||
-    category.horse.deletedAt
-  ) {
+  if (!category || category.horse.archived || category.horse.deletedAt) {
+    return null;
+  }
+
+  // Use the updated verifyHorseOwnership function
+  const hasAccess = await verifyHorseOwnership(category.horse.id, userId);
+  if (!hasAccess) {
     return null;
   }
 
@@ -875,6 +886,13 @@ export async function getCustomLogsByCategoryId(categoryId: string, userId: stri
           nickname: true,
         },
       },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          color: true,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -885,7 +903,7 @@ export async function getCustomLogsByCategoryId(categoryId: string, userId: stri
 }
 
 export async function createCustomLog(categoryId: string, userId: string, data: CreateLogData) {
-  // First verify the user owns the horse
+  // First verify the user owns the horse or has access to it (shared)
   const category = await prisma.custom_log_categories.findFirst({
     where: {
       id: categoryId,
@@ -895,12 +913,13 @@ export async function createCustomLog(categoryId: string, userId: string, data: 
     },
   });
 
-  if (
-    !category ||
-    category.horse.ownerId !== userId ||
-    category.horse.archived ||
-    category.horse.deletedAt
-  ) {
+  if (!category || category.horse.archived || category.horse.deletedAt) {
+    return null;
+  }
+
+  // Use the updated verifyHorseOwnership function
+  const hasAccess = await verifyHorseOwnership(category.horse.id, userId);
+  if (!hasAccess) {
     return null;
   }
 

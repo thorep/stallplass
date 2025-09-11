@@ -6,7 +6,7 @@ function navigateToHorseDetail(horseName: string = "Testhest") {
   cy.url({ timeout: 10000 }).should("include", "/mine-hester");
 
   // Wait for horses to load
-  cy.get('[data-cy="horses-grid"]', { timeout: 20000 }).should("be.visible");
+  cy.get('[data-cy="owned-horses-grid"]', { timeout: 20000 }).should("be.visible");
 
   // Find the specific horse card with exact name and click its "Vis" button
   cy.get('[data-cy="horse-name"]')
@@ -25,7 +25,11 @@ function navigateToHorseDetail(horseName: string = "Testhest") {
 
 function updateBasicInfo(newName: string, newBreed: string) {
   // Click edit button for basic info section (Grunnleggende informasjon)
-  cy.contains("Grunnleggende informasjon").parent().parent().find('[data-cy="edit-button"]').click();
+  cy.contains("Grunnleggende informasjon")
+    .parent()
+    .parent()
+    .find('[data-cy="edit-button"]')
+    .click();
 
   // Update name
   cy.get('[data-cy="horse-name-input"]').clear().type(newName).should("have.value", newName);

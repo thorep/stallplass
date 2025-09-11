@@ -28,7 +28,7 @@ function deleteHorse(name: string) {
   cy.wait(2000);
 
   // Verify horse is gone
-  cy.get('[data-cy="horses-grid"]').should("not.contain", name);
+  cy.get('[data-cy="owned-horses-grid"]').should("not.contain", name);
 }
 
 describe("delete-horse", () => {

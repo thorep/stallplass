@@ -26,7 +26,19 @@ export default async function MineHesterContainer({
   searchParams
 }: Readonly<MineHesterContainerProps & { searchParams?: { [key: string]: string | string[] | undefined } }>) {
   const horses: HorsesWithOwner[] = await prisma.horses.findMany({
-    where: { ownerId: user.id, archived: false },
+    where: {
+      archived: false,
+      OR: [
+        { ownerId: user.id },
+        {
+          horseShares: {
+            some: {
+              sharedWithId: user.id
+            }
+          }
+        }
+      ]
+    },
     include: { profiles: true, horseShares: true },
   });
 

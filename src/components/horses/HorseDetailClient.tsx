@@ -10,7 +10,7 @@ import {
 import UnifiedImageUpload, { UnifiedImageUploadRef } from "@/components/ui/UnifiedImageUpload";
 import InlineEditSection from "@/components/molecules/InlineEditSection";
 import { updateHorseFieldAction } from "@/app/actions/horse";
-import { HORSE_GENDER_LABELS, UpdateHorseData } from "@/types/horse";
+import { HORSE_GENDER_LABELS, UpdateHorseData, HorseWithOwner } from "@/types/horse";
 import {
   Calendar,
   FileText,
@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 
 interface HorseDetailClientProps {
-  horse: any; // We'll type this properly later
+  horse: HorseWithOwner;
   user: User;
 }
 
@@ -86,7 +86,7 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
         }
 
         // Update local state immediately
-        setHorse((prev: any) => ({ ...prev, ...data }));
+        setHorse((prev: HorseWithOwner) => ({ ...prev, ...data }));
 
         toast.success("Endringene ble lagret");
         setEditingSection(null);
@@ -120,11 +120,11 @@ export default function HorseDetailClient({ horse: initialHorse, user }: HorseDe
       await updateHorseFieldAction(horse.id, 'imageDescriptions', imageDescriptionsArray);
 
       // Update local state
-      setHorse((prev: any) => ({
+      setHorse((prev: HorseWithOwner) => ({
         ...prev,
         images: finalImages,
         imageDescriptions: imageDescriptionsArray
-      } as any));
+      }));
 
       toast.success("Bildene ble oppdatert");
       setEditingSection(null);

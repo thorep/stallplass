@@ -10,13 +10,13 @@ function navigateToSharingTab() {
 
 function shareHorseWithUser(searchQuery: string, expectedUserName: string) {
   // Wait for the sharing component to load
-  cy.contains("Del hest", { timeout: 20000 }).should("be.visible");
+  cy.contains("Deling og tilgang", { timeout: 20000 }).should("be.visible");
 
   // Type in the search input
-  cy.get('input[placeholder="Søk på kallenavn..."]').clear().type(searchQuery);
+  cy.get('input[placeholder*="Søk"]').clear().type(searchQuery);
 
   // Wait for search results to appear
-  cy.contains("Søkeresultater:", { timeout: 10000 }).should("be.visible");
+  cy.contains("Søkeresultater", { timeout: 10000 }).should("be.visible");
 
   // Find the user in search results and click "Del" button
   cy.contains(expectedUserName).parents().contains("button", "Del").click();
@@ -49,7 +49,7 @@ describe("share-horse", () => {
     cy.url({ timeout: 10000 }).should("include", "/mine-hester");
 
     // Wait for horses to load
-    cy.get('[data-cy="horses-grid"]', { timeout: 20000 }).should("be.visible");
+    cy.get('[data-cy="owned-horses-grid"]', { timeout: 20000 }).should("be.visible");
 
     // Find the Testhest horse card and click its "Vis" button
     cy.contains("Testhest").parents('[data-cy="horse-card"]').find('[data-cy="vis-horse-button"]').click();
@@ -74,15 +74,35 @@ describe("share-horse", () => {
     cy.visit("/mine-hester");
 
     // Wait for horses to load
-    cy.get('[data-cy="horses-grid"]', { timeout: 20000 }).should("be.visible");
+    cy.contains("Hester delt med meg", { timeout: 20000 }).should("be.visible");
 
-    // Verify that Testhest appears in user2's horse list
+    // Verify that Testhest appears in user2's shared horses section
     cy.contains("Testhest").should("be.visible");
 
-    // Verify that it shows as shared
+    // Verify that it shows as shared in the shared horses section
     cy.contains("Testhest").parents('[data-cy="horse-card"]').within(() => {
       cy.contains("Delt").should("be.visible");
       cy.contains("Delt av user1").should("be.visible");
     });
+
+    // Click on the shared horse to verify access to horse details
+    cy.contains("Testhest").parents('[data-cy="horse-card"]').find('[data-cy="vis-horse-button"]').click();
+
+    // Wait for the horse page to load
+    cy.url({ timeout: 10000 }).should("match", /\/mine-hester\/[^\/]+$/);
+
+    // Verify that user2 can access the horse details
+    cy.contains("Testhest").should("be.visible");
+
+    // Verify that user2 can see the Logg tab (but not Budget tab)
+    cy.get('[data-cy="nav-logg"]').should("be.visible");
+    cy.get('[data-cy="nav-stall"]').should("be.visible");
+    cy.get('[data-cy="nav-del"]').should("be.visible");
+    cy.get('[data-cy="nav-budsjett"]').should("not.exist");
+
+    // Test that user2 can access the logg page
+    cy.get('[data-cy="nav-logg"]').click();
+    cy.url({ timeout: 10000 }).should("include", "/logg");
+    cy.contains("Du må opprette minst én kategori").should("be.visible");
   });
 });

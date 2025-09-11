@@ -4,7 +4,7 @@ describe("create-budget-item", () => {
     cy.visit("/mine-hester");
 
     // Wait for horses to load
-    cy.get('[data-cy="horses-grid"]', { timeout: 20000 }).should("be.visible");
+    cy.get('[data-cy="owned-horses-grid"]', { timeout: 20000 }).should("be.visible");
 
     // Find the specific horse card with exact name "Testhest" and click its "Vis" button
     cy.get('[data-cy="horse-name"]')
@@ -38,7 +38,7 @@ describe("create-budget-item", () => {
     cy.wait(2000);
 
     // Scroll to top to ensure the list is visible
-    cy.scrollTo('top');
+    cy.scrollTo("top");
 
     // Verify the expense appears in the list
     cy.contains("Test utgift").should("be.visible");
@@ -51,7 +51,7 @@ describe("create-budget-item", () => {
     cy.visit("/mine-hester");
 
     // Wait for horses to load
-    cy.get('[data-cy="horses-grid"]', { timeout: 20000 }).should("be.visible");
+    cy.get('[data-cy="owned-horses-grid"]', { timeout: 20000 }).should("be.visible");
 
     // Find the specific horse card with exact name "Testhest" and click its "Vis" button
     cy.get('[data-cy="horse-name"]')

@@ -34,6 +34,10 @@ export default function MineHesterClient({
     setEditingHorse(undefined);
   };
 
+  // Separate owned horses from shared horses
+  const ownedHorses = horses.filter(horse => horse.profiles.id === user.id);
+  const sharedHorses = horses.filter(horse => horse.profiles.id !== user.id);
+
   return (
     <>
       <div className="p-4 md:p-8">
@@ -55,15 +59,15 @@ export default function MineHesterClient({
             </Button>
           </div>
 
-          {/* Budget overview for all horses (no edit) */}
-          {horses && horses.length > 0 && (
+          {/* Budget overview for owned horses only */}
+          {ownedHorses && ownedHorses.length > 0 && (
             <div className="mb-8">
               <BudgetOverviewAllHorses initialData={budgetOverview} activeMonth={activeMonth} />
             </div>
           )}
 
           {/* Empty State */}
-          {horses && horses.length === 0 && (
+          {ownedHorses && ownedHorses.length === 0 && sharedHorses.length === 0 && (
             <div className="text-center py-20">
               <div className="max-w-4xl mx-auto px-4">
                 <div className="mb-6">
@@ -117,13 +121,38 @@ export default function MineHesterClient({
 
           {/* Horses Grid */}
           {horses && horses.length > 0 && (
-            <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              data-cy="horses-grid"
-            >
-              {horses.map((horse) => (
-                <HorseCard key={horse.id} horse={horse} user={user} />
-              ))}
+            <div className="space-y-8">
+              {/* Owned Horses */}
+              {ownedHorses.length > 0 && (
+                <div>
+                  <h2 className="text-h3 mb-4">Mine hester</h2>
+                  <div
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    data-cy="owned-horses-grid"
+                  >
+                    {ownedHorses.map((horse) => (
+                      <HorseCard key={horse.id} horse={horse} user={user} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Shared Horses */}
+              {sharedHorses.length > 0 && (
+                <div>
+                  <div className="border-t pt-8">
+                    <h2 className="text-h3 mb-4">Hester delt med meg</h2>
+                    <div
+                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      data-cy="shared-horses-grid"
+                    >
+                      {sharedHorses.map((horse) => (
+                        <HorseCard key={horse.id} horse={horse} user={user} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

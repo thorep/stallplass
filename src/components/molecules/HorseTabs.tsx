@@ -6,17 +6,20 @@ import { ChevronLeft } from "lucide-react";
 
 interface HorseTabsProps {
   horseId: string;
+  isOwner?: boolean;
 }
 
-export default function HorseTabs({ horseId }: HorseTabsProps) {
+export default function HorseTabs({ horseId, isOwner = true }: HorseTabsProps) {
   const pathname = usePathname();
   const base = `/mine-hester/${horseId}`;
   const tabs = [
     { href: base, label: "Oversikt" },
     { href: `${base}/logg`, label: "Logg" },
-    { href: `${base}/budsjett`, label: "Budsjett" },
+    // Only show budget tab if user is owner
+    ...(isOwner ? [{ href: `${base}/budsjett`, label: "Budsjett" }] : []),
     { href: `${base}/stall`, label: "Stall" },
-    { href: `${base}/del`, label: "Del" },
+    // Only show share tab if user is NOT owner
+    ...(!isOwner ? [{ href: `${base}/del`, label: "Del" }] : []),
   ];
 
   return (
@@ -39,7 +42,7 @@ export default function HorseTabs({ horseId }: HorseTabsProps) {
                 <Link
                   key={t.href}
                   href={t.href}
-                  data-cy={`nav-${t.label.toLowerCase()}`}
+                  data-cy={`nav-${t.label.toLowerCase().replace('ø', 'o')}`}
                   className={[
                     "px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-all",
                     active

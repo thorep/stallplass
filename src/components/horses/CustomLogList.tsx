@@ -1,6 +1,6 @@
 "use client";
 
-import { HorseCustomCategory, useCustomLogs } from "@/hooks/useHorseLogs";
+import { HorseCustomCategory, useCustomLogs, HorseLog } from "@/hooks/useHorseLogs";
 import { cn } from "@/lib/utils";
 import { Box, Button, Card, CardContent, CardHeader, Chip, Typography } from "@mui/material";
 import { formatDistanceToNow } from "date-fns";
@@ -179,7 +179,7 @@ export function CustomLogList({
           </div>
         ) : (
           <div className="space-y-6">
-            {logs.map((log) => (
+            {logs.map((log: HorseLog) => (
               <Box
                 key={log.id}
                 position="relative"
@@ -219,7 +219,7 @@ export function CustomLogList({
                   <Box display="flex" flexDirection="column" gap={1.5}>
                     <Chip
                       icon={<User className="h-4 w-4" />}
-                      label={log.profile.nickname}
+                      label={log.profile?.nickname || 'Ukjent'}
                       size="small"
                       variant="filled"
                       className="text-caption font-medium w-fit"
@@ -300,7 +300,7 @@ export function CustomLogList({
                       )}
                   </div>
 
-                  {log.images.length > 0 && (
+                  {log.images && log.images.length > 0 && (
                     <Box display="flex" flexDirection="column" gap={1.5}>
                       <Box display="flex" alignItems="center" gap={1} color="text.secondary">
                         <ImageIcon className="h-4 w-4" />
@@ -311,7 +311,7 @@ export function CustomLogList({
                         gridTemplateColumns={{ xs: "1fr", md: "1fr 1fr" }}
                         gap={2}
                       >
-                        {log.images.map((image, index) => (
+                         {log.images?.map((image: string, index: number) => (
                           <Box
                             key={`${log.id}-${index}`}
                             display="flex"
@@ -328,7 +328,7 @@ export function CustomLogList({
                             >
                               <Image
                                 src={image}
-                                alt={log.imageDescriptions[index] || `Bilde ${index + 1}`}
+                                alt={log.imageDescriptions?.[index] || `Bilde ${index + 1}`}
                                 fill
                                 className="rounded-xl hover:scale-105 transition-transform duration-200"
                                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
@@ -355,9 +355,9 @@ export function CustomLogList({
                                 }}
                               />
                             </Box>
-                            {log.imageDescriptions[index] && (
+                            {log.imageDescriptions?.[index] && (
                               <Typography variant="body2" color="text.secondary" px={0.5}>
-                                {log.imageDescriptions[index]}
+                                {log.imageDescriptions?.[index]}
                               </Typography>
                             )}
                           </Box>

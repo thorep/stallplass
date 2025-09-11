@@ -49,7 +49,7 @@ function submitAndVerifyHorse(name: string) {
 
   // Modal closes, back on horses list
   cy.get('[data-cy="horse-modal"]').should("not.exist");
-  cy.get('[data-cy="horses-grid"]', { timeout: 20000 }).contains(name);
+  cy.get('[data-cy="owned-horses-grid"]', { timeout: 20000 }).contains(name);
 }
 
 describe("create-horse", () => {
