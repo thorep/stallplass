@@ -1,20 +1,22 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import BoxGrid from "@/components/organisms/BoxGrid";
+import BoxListingCard from "@/components/molecules/BoxListingCard";
 import Footer from "@/components/organisms/Footer";
 import Header from "@/components/organisms/Header";
+import { Button } from "@/components/ui/button";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
-import { BoxWithStable } from "@/types/stable";
+import type { RecentActivityItem } from "@/types/forum";
+import { BoxWithStablePreview } from "@/types/stable";
+import { formatShortNorDate, truncateText } from "@/utils/formatting";
 import {
   BuildingOfficeIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
   CheckCircleIcon,
   HeartIcon,
   MagnifyingGlassIcon,
   ShieldCheckIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
-import { Stack } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,9 +25,12 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const { user } = useSupabaseUser();
   const router = useRouter();
-  const [filteredBoxes, setFilteredBoxes] = useState<BoxWithStable[]>([]);
+  const [filteredBoxes, setFilteredBoxes] = useState<BoxWithStablePreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [recentItems, setRecentItems] = useState<RecentActivityItem[]>([]);
+  const [loadingThreads, setLoadingThreads] = useState(true);
+  const [threadsError, setThreadsError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBoxes = async () => {
@@ -47,6 +52,23 @@ export default function Home() {
 
     fetchBoxes();
   }, [user, router]);
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      try {
+        setLoadingThreads(true);
+        const res = await fetch("/api/forum/recent-activity?limit=3");
+        if (!res.ok) throw new Error("Failed to fetch recent activity");
+        const json = await res.json();
+        setRecentItems(json.data || []);
+      } catch (e) {
+        setThreadsError("Kunne ikke hente nylig aktivitet");
+      } finally {
+        setLoadingThreads(false);
+      }
+    };
+    fetchRecent();
+  }, []);
 
   const sponsoredBoxes = filteredBoxes.filter((box) => box.isSponsored);
   const regularBoxes = filteredBoxes.filter((box) => !box.isSponsored);
@@ -80,67 +102,67 @@ export default function Home() {
               <SparklesIcon className="h-4 w-4 mr-2" />
               Norges ledende stallplattform
             </div>
-
             {/* Main heading */}
             <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-              Finn den perfekte
-              <br />
-              <span className="bg-gradient-to-r from-violet-300 to-purple-300 bg-clip-text text-transparent">
-                stallplassen
+              Stallplass.no –
+              <span className="bg-gradient-to-r from-violet-300 to-purple-300 bg-clip-text text-transparent ml-2">
+                alt du trenger for hesten
               </span>
             </h1>
 
-            {/* Subtitle */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 sm:p-8 mb-10 max-w-3xl mx-auto border border-white/30">
-              <p className="text-h4 text-white leading-relaxed">
-                Stallplass.no er Norges første komplette plattform for hestemiljøet. Her kan
-                hesteeiere enkelt finne ledige stallplasser og tjenester som veterinær, hovslager og
-                hestebutikk – alt samlet på ett sted. Tjenestetilbydere vises automatisk på staller
-                og stallplasser i sitt nærområde, slik at leietakere raskt finner både stallplass og
-                nødvendige tjenester. <br />
-                For stalleiere og tjenestetilbydere gir Stallplass.no en unik mulighet til å nå ut
-                til potensielle kunder i sitt område. Ved å være synlig på relevante staller og i
-                lokale søk, blir det enklere å få henvendelser fra hesteeiere som faktisk trenger
-                det du tilbyr. <br />
-                Du kan også registrere hesteinformasjon og dele den trygt med stalleier eller andre
-                som tar hånd om hesten.
-              </p>
-            </div>
-
-            {/* Search Button */}
-            <div className="max-w-2xl mx-auto mb-12">
-              <Link href="/sok">
-                <Button
-                  size="lg"
-                  className="bg-[#5B4B8A] hover:bg-[#47396A] text-white shadow-2xl border-0 px-12 py-6 text-xl font-bold rounded-2xl transform hover:scale-105 transition-all duration-300 shadow-violet-500/25"
-                  data-cy="search-stables-button"
-                >
-                  <MagnifyingGlassIcon className="h-6 w-6 mr-3" />
-                  Søk etter stallplass
-                </Button>
+            {/* Description intentionally removed to reduce friction */}
+            {/* Feature links (glass cards) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto">
+              {/* Annonser */}
+              <Link href="/sok" className="group">
+                <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/30 text-left hover:bg-white/25 transition-all h-full">
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center border border-white/30">
+                      <MagnifyingGlassIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-semibold">Annonser</h3>
+                      <p className="text-xs sm:text-sm text-white/90">
+                        Stallplasser, hester, fôrhester og tjenester
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </Link>
-            </div>
 
-            {/* Features grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="flex items-center justify-center space-x-3 text-white/90">
-                <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                  <CheckCircleIcon className="h-5 w-5 text-violet-300" />
+              {/* Mine Hester */}
+              <Link href="/mine-hester" className="group">
+                <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/30 text-left hover:bg-white/25 transition-all h-full">
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center border border-white/30">
+                      <HeartIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-semibold">Mine hester</h3>
+                      <p className="text-xs sm:text-sm text-white/90">
+                        Samle hesteinfo og del trygt med andre
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <span className="font-medium drop-shadow-sm">Heste-spesifikke filtre</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3 text-white/90">
-                <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                  <ShieldCheckIcon className="h-5 w-5 text-violet-300" />
+              </Link>
+
+              {/* Forum */}
+              <Link href="/forum" className="group">
+                <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/30 text-left hover:bg-white/25 transition-all h-full">
+                  <div className="flex items-center gap-3 text-white">
+                    <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center border border-white/30">
+                      <ChatBubbleOvalLeftEllipsisIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-semibold">Forum</h3>
+                      <p className="text-xs sm:text-sm text-white/90">
+                        Spør, del erfaringer og få råd
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <span className="font-medium drop-shadow-sm">Laget for heste-miljøet</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3 text-white/90">
-                <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                  <HeartIcon className="h-5 w-5 text-amber-300" />
-                </div>
-                <span className="font-medium drop-shadow-sm">Gratis for ryttere</span>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -151,7 +173,7 @@ export default function Home() {
         {loading ? (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-            <p className="text-slate-500">Laster stallbokser...</p>
+            <p className="text-slate-500">Laster stallplasser...</p>
           </div>
         ) : error ? (
           <div className="text-center py-20">
@@ -161,57 +183,99 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-16">
-            {/* Quick actions */}
-            <section className="text-center">
-              <Stack 
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={3}
-                className="max-w-4xl mx-auto"
-                sx={{
-                  alignItems: 'stretch',
-                  justifyContent: 'center',
-                }}
-              >
-                <Link href="/sok" className="flex-1">
-                  <div className="group bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer h-full">
-                    <div className="h-12 w-12 bg-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <MagnifyingGlassIcon className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-indigo-900 mb-2">Søk etter stallplass</h3>
-                    <p className="text-indigo-700 text-sm">
-                      Finn ledige stallplasser i ditt område
-                    </p>
+            {/* Why Stallplass */}
+            <section>
+              <div className="text-center mb-8">
+                <h2 className="text-h2 font-bold text-slate-900 mb-2">
+                  Hvorfor velge Stallplass.no?
+                </h2>
+                <p className="text-slate-600">Alt du trenger for hest – samlet på ett sted.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                <div className="rounded-xl border border-slate-200 bg-white p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-indigo-600" />
+                    <h3 className="font-semibold text-slate-900">Finn raskt det du trenger</h3>
                   </div>
-                </Link>
+                  <p className="text-sm text-slate-600">
+                    Søk etter stallplasser, hester og tjenester i nærheten med relevante filtre.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                    <h3 className="font-semibold text-slate-900">Gratis for ryttere</h3>
+                  </div>
+                  <p className="text-sm text-slate-600">
+                    Opprett bruker, lagre favoritter og administrer hesteinformasjon uten kostnad.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <ShieldCheckIcon className="h-5 w-5 text-purple-600" />
+                    <h3 className="font-semibold text-slate-900">Bygget for hestemiljøet</h3>
+                  </div>
+                  <p className="text-sm text-slate-600">
+                    Del trygt med stalleier, få oversikt og still spørsmål i forumet.
+                  </p>
+                </div>
+              </div>
+            </section>
 
-                <Link href="/dashboard" className="flex-1">
-                  <div className="group bg-gradient-to-br from-violet-50 to-violet-100 border border-violet-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer h-full">
-                    <div className="h-12 w-12 bg-violet-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <BuildingOfficeIcon className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-violet-900 mb-2">
-                      Legg ut stallplass eller tjeneste
-                    </h3>
-                    <p className="text-violet-700 text-sm">
-                      Registrer din stall eller tjeneste og la andre finne deg
-                    </p>
-                  </div>
+            {/* Forum feed */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-h2 font-bold text-slate-900">Fra forumet</h2>
+                  <p className="text-slate-600">Nylig aktivitet fra fellesskapet</p>
+                </div>
+                <Link href="/forum">
+                  <Button variant="outline">Se alle</Button>
                 </Link>
+              </div>
 
-                <Link href="/mine-hester" className="flex-1">
-                  <div className="group bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer h-full">
-                    <div className="h-12 w-12 bg-amber-500 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <HeartIcon className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-bold text-amber-900 mb-2">
-                      Legg til din hest på Mine Hester
-                    </h3>
-                    <p className="text-amber-700 text-sm">
-                      Organiser hesteinformasjon og del sikkert med andre
-                    </p>
-                  </div>
-                </Link>
-              </Stack>
+              {loadingThreads ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5B4B8A] mx-auto" />
+                </div>
+              ) : threadsError ? (
+                <div className="text-center py-8">
+                  <p className="text-red-600">{threadsError}</p>
+                </div>
+              ) : recentItems.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">Ingen tråder enda</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                  {recentItems.map((a) => {
+                    const href =
+                      a.type === "reply" ? `/forum/${a.threadId ?? ""}` : `/forum/${a.id}`;
+                    const title =
+                      a.type === "reply" ? a.threadTitle || "Svar i tråd" : a.title || "Tråd";
+                    const excerpt = a.content
+                      ? truncateText(a.content.replace(/<[^>]*>/g, "").trim(), 140)
+                      : "";
+                    return (
+                      <Link
+                        key={`${a.type}-${a.id}`}
+                        href={href}
+                        className="block rounded-xl border border-slate-200 bg-white p-4 hover:shadow-md transition-shadow"
+                      >
+                        <div className="text-xs text-indigo-700 font-medium mb-1">
+                          {a.category?.name || "Forum"}
+                        </div>
+                        <h3 className="font-semibold text-slate-900 line-clamp-2 mb-2">{title}</h3>
+                        {excerpt ? (
+                          <p className="text-sm text-slate-600 line-clamp-3 mb-3">{excerpt}</p>
+                        ) : null}
+                        <div className="text-xs text-slate-500">
+                          {a.author?.nickname || "Anonym"} • {formatShortNorDate(a.createdAt)} •{" "}
+                          {a.type === "reply" ? "svar" : "tråd"}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </section>
 
             {/* Sponsored boxes */}
@@ -219,13 +283,17 @@ export default function Home() {
               <section>
                 <div className="text-center mb-12">
                   <h2 className="text-h2 md:text-h2-lg font-bold text-slate-900 mb-4">
-                    Sponsede bokser
+                    Sponsede plasser
                   </h2>
                   <p className="text-slate-600 max-w-2xl mx-auto">
-                    Fremhevede stallbokser som gir ekstra synlighet og rask tilgang.
+                    Fremhevede stallplasser som gir ekstra synlighet og rask tilgang.
                   </p>
                 </div>
-                <BoxGrid boxes={sponsoredBoxes} />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {sponsoredBoxes.map((box) => (
+                    <BoxListingCard key={box.id} box={box} />
+                  ))}
+                </div>
               </section>
             )}
 
@@ -233,7 +301,7 @@ export default function Home() {
             <section>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div>
-                  <h2 className="text-h2 font-bold text-slate-900 mb-2">Ledige stallbokser</h2>
+                  <h2 className="text-h2 font-bold text-slate-900 mb-2">Ledige stallplasser</h2>
                   <p className="text-slate-600">{filteredBoxes.length} bokser tilgjengelig</p>
                 </div>
                 <Link href="/sok">
@@ -252,11 +320,15 @@ export default function Home() {
                     &apos;Ingen stallplasser tilgjengelig&apos;
                   </h3>
                   <p className="text-slate-500">
-                    &apos;Sjekk tilbake senere for nye stallbokser.&apos;
+                    &apos;Sjekk tilbake senere for nye stallplasser.&apos;
                   </p>
                 </div>
               ) : (
-                <BoxGrid boxes={regularBoxes.slice(0, 6)} />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {regularBoxes.slice(0, 6).map((box) => (
+                    <BoxListingCard key={box.id} box={box} />
+                  ))}
+                </div>
               )}
             </section>
           </div>
