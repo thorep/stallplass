@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
+import { usePostHogEvents } from "@/hooks/usePostHogEvents";
 
 export interface PartLoanHorse {
   id: string;
@@ -111,6 +112,7 @@ export function usePartLoanHorse(id?: string) {
 
 export function usePartLoanHorseMutations() {
   const queryClient = useQueryClient();
+  const { partLoanHorseCreated, partLoanHorseUpdated } = usePostHogEvents();
 
   const invalidatePartLoanHorses = useCallback(() => {
     queryClient.invalidateQueries({
@@ -137,8 +139,14 @@ export function usePartLoanHorseMutations() {
       const result = await response.json();
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       invalidatePartLoanHorses();
+      // Track creation event
+      partLoanHorseCreated({
+        part_loan_horse_id: created.id,
+        county_id: created.countyId || undefined,
+        municipality_id: created.municipalityId || undefined,
+      });
     },
   });
 
@@ -167,8 +175,10 @@ export function usePartLoanHorseMutations() {
       const result = await response.json();
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (updated) => {
       invalidatePartLoanHorses();
+      // Track update event
+      partLoanHorseUpdated({ part_loan_horse_id: updated.id });
     },
   });
 

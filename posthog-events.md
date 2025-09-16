@@ -5,10 +5,12 @@ Dette dokumentet lister opp alle PostHog events som sendes fra Stallplass-appen.
 ## Oversikt over Event-kategorier
 
 ### 1. Brukerregistrering og autentisering
-### 2. Annonse-opprettelse (staller, bokser, tjenester)
-### 3. Forum-aktivitet
-### 4. Søkeinteraksjoner
-### 5. Feilhåndtering
+### 2. Annonse-opprettelse (staller, bokser, tjenester, hest-salg/kjøp, forhest)
+### 3. Annonse-oppdatering (lagret)
+### 4. Forum-aktivitet
+### 5. Søkeinteraksjoner
+### 6. Mine hester
+### 7. Feilhåndtering
 
 ---
 
@@ -41,7 +43,8 @@ Dette dokumentet lister opp alle PostHog events som sendes fra Stallplass-appen.
 - `location` (string, optional): Lokasjon for stallen
 
 **Sendes fra:**
-- `src/hooks/useStableMutations.ts:61`
+- `src/hooks/useStableMutations.ts` (client, create mutation onSuccess)
+- `src/app/api/stables/route.ts` (server, etter vellykket opprettelse)
 
 **Trigger:** Etter vellykket opprettelse av stal
 
@@ -73,7 +76,64 @@ Dette dokumentet lister opp alle PostHog events som sendes fra Stallplass-appen.
 
 ---
 
-### 3. Forum-aktivitet
+#### `horse_sale_created`
+**Beskrivelse:** Spores når en hest til salgs legges ut
+
+**Properties:**
+- `horse_sale_id` (string, optional)
+- `price` (number, optional)
+- `breed_id` (string, optional)
+- `discipline_id` (string, optional)
+- `size` (string, optional)
+
+**Sendes fra:**
+- `src/hooks/useHorseSales.ts` (create mutation onSuccess)
+
+#### `horse_buy_created`
+**Beskrivelse:** Spores når en «ønskes kjøpt»-annonse opprettes
+
+**Properties:**
+- `horse_buy_id` (string, optional)
+- `price_min`/`price_max` (number, optional)
+- `age_min`/`age_max` (number, optional)
+- `breed_id`/`discipline_id` (string, optional)
+
+**Sendes fra:**
+- `src/hooks/useHorseBuys.ts` (create mutation onSuccess)
+
+#### `part_loan_horse_created`
+**Beskrivelse:** Spores når en fôrhest-annonse opprettes
+
+**Properties:**
+- `part_loan_horse_id` (string, optional)
+- `county_id`/`municipality_id` (string, optional)
+
+**Sendes fra:**
+- `src/hooks/usePartLoanHorses.ts` (create mutation onSuccess)
+
+---
+
+### 3. Annonse-oppdatering (lagret)
+
+#### `stable_updated`
+**Properties:** `stable_id`
+
+#### `box_updated`
+**Properties:** `box_id`
+
+#### `service_updated`
+**Properties:** `service_id`
+
+#### `horse_sale_updated`
+**Properties:** `horse_sale_id`
+
+#### `horse_buy_updated`
+**Properties:** `horse_buy_id`
+
+#### `part_loan_horse_updated`
+**Properties:** `part_loan_horse_id`
+
+### 4. Forum-aktivitet
 
 #### `forum_reply_posted`
 **Beskrivelse:** Spores når en bruker poster et svar i forumet
@@ -90,13 +150,13 @@ Dette dokumentet lister opp alle PostHog events som sendes fra Stallplass-appen.
 
 ---
 
-### 4. Søkeinteraksjoner
+### 5. Søkeinteraksjoner
 
 #### `search_result_clicked`
 **Beskrivelse:** Spores når en bruker klikker på et søkeresultat
 
 **Properties (required):**
-- `result_type`: 'stable' | 'box' | 'service' | 'forhest' | 'horse_sale'
+- `result_type`: 'stable' | 'box' | 'service' | 'forhest' | 'horse_sale' | 'horse_buy'
 - `result_id` (string): ID til det klikkede resultatet
 
 **Properties (optional):**
@@ -114,7 +174,19 @@ Dette dokumentet lister opp alle PostHog events som sendes fra Stallplass-appen.
 
 ---
 
-### 5. Feilhåndtering
+### 6. Mine hester
+
+#### `horse_log_added` (server)
+**Beskrivelse:** Logges når en ny logg legges til for en hest
+
+**Properties:** `horse_id`, `category_id`, `images_count`, `has_images`, `timestamp`
+
+**Sendes fra:**
+- `src/app/actions/logs.ts:createCustomLogAction`
+
+---
+
+### 7. Feilhåndtering
 
 #### Exception Tracking
 **Event Type:** `captureException` (PostHog metode)
@@ -149,8 +221,17 @@ const {
   stableCreated, 
   boxCreated, 
   serviceCreated, 
+  horseSaleCreated,
+  horseBuyCreated,
+  partLoanHorseCreated,
   forumReplyPosted, 
   searchResultClicked,
+  stableUpdated,
+  boxUpdated,
+  serviceUpdated,
+  horseSaleUpdated,
+  horseBuyUpdated,
+  partLoanHorseUpdated,
   custom 
 } = usePostHogEvents();
 ```

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePostHogEvents } from '@/hooks/usePostHogEvents';
 
 export interface HorseBuy {
   id: string;
@@ -75,6 +76,7 @@ export function useHorseBuy(id: string) {
 
 export function useHorseBuyMutations() {
   const queryClient = useQueryClient();
+  const { horseBuyCreated, horseBuyUpdated } = usePostHogEvents();
 
   type ValidationDetail = { field: string; message: string };
   type ApiErrorBody = { error?: string; details?: ValidationDetail[] };
@@ -97,8 +99,18 @@ export function useHorseBuyMutations() {
       const result = await response.json();
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['horse-buys'] });
+      // Track creation event
+      horseBuyCreated({
+        horse_buy_id: created.id,
+        price_min: created.priceMin,
+        price_max: created.priceMax,
+        age_min: created.ageMin,
+        age_max: created.ageMax,
+        breed_id: created.breedId ?? undefined,
+        discipline_id: created.disciplineId ?? undefined,
+      });
     }
   });
 
@@ -122,6 +134,8 @@ export function useHorseBuyMutations() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['horse-buys'] });
       queryClient.invalidateQueries({ queryKey: ['horse-buys', data.id] });
+      // Track update event
+      horseBuyUpdated({ horse_buy_id: data.id });
     }
   });
 

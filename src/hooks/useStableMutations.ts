@@ -74,6 +74,7 @@ export function useCreateStable() {
  */
 export function useUpdateStable() {
   const queryClient = useQueryClient();
+  const { stableUpdated } = usePostHogEvents();
   
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateStableData }) => {
@@ -111,6 +112,9 @@ export function useUpdateStable() {
         queryKey: ['stables', 'search'],
         exact: false
       });
+
+      // Track update event
+      stableUpdated({ stable_id: variables.id });
     },
     onError: () => {
     },

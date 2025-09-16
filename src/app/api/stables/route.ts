@@ -346,6 +346,22 @@ async function createStableHandler(request: NextRequest) {
     });
 
     logger.info({ stableId: stable.id, duration }, "Stable created successfully");
+
+    // Server-side analytics: stable_created
+    try {
+      const ph = getPostHogServer();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (ph as any).capture?.({
+        distinctId: profileId,
+        event: 'stable_created',
+        properties: {
+          stable_id: stable.id,
+          location: (stable as any)?.municipality || (stable as any)?.poststed || (stable as any)?.location || undefined,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch {}
+
     return NextResponse.json(stable, { status: 201 });
   } catch (error) {
     const duration = Date.now() - startTime;

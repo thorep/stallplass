@@ -159,6 +159,7 @@ export function useCreateBoxServer() {
  */
 export function useUpdateBox() {
   const queryClient = useQueryClient();
+  const { boxUpdated } = usePostHogEvents();
 
   return useMutation({
     mutationFn: async (data: UpdateBoxData) => {
@@ -193,6 +194,9 @@ export function useUpdateBox() {
         // Invalidate stable stats in case pricing or availability changed
         queryClient.invalidateQueries({ queryKey: stableKeys.withStats() });
       }
+
+      // Track update event
+      boxUpdated({ box_id: variables.id });
     },
     onError: () => {
       // Error handling - TanStack Query will handle the error state

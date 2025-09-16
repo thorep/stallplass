@@ -124,6 +124,7 @@ export function useCreateService() {
  */
 export function useUpdateService() {
   const queryClient = useQueryClient();
+  const { serviceUpdated } = usePostHogEvents();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateServiceData }) => {
@@ -152,6 +153,9 @@ export function useUpdateService() {
 
       // Invalidate search results that might include this service
       queryClient.invalidateQueries({ queryKey: serviceKeys.search({}) });
+
+      // Track update event
+      serviceUpdated({ service_id: variables.id });
     },
     onError: () => {},
     throwOnError: false,

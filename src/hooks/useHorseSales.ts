@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { usePostHogEvents } from '@/hooks/usePostHogEvents';
 
 // Types
 export interface HorseBreed {
@@ -165,6 +166,7 @@ export function useHorseDisciplines() {
 // Horse Sales Mutations
 export function useHorseSaleMutations() {
   const queryClient = useQueryClient();
+  const { horseSaleCreated, horseSaleUpdated } = usePostHogEvents();
 
   const createHorseSale = useMutation({
     mutationFn: async (data: CreateHorseSaleData): Promise<HorseSale> => {
@@ -190,8 +192,16 @@ export function useHorseSaleMutations() {
       const result = await response.json();
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['horse-sales'] });
+      // Track creation event
+      horseSaleCreated({
+        horse_sale_id: created.id,
+        price: created.price,
+        breed_id: created.breedId,
+        discipline_id: created.disciplineId,
+        size: created.size,
+      });
     },
   });
 
@@ -223,6 +233,8 @@ export function useHorseSaleMutations() {
       queryClient.invalidateQueries({ queryKey: ['horse-sales'] });
       queryClient.invalidateQueries({ queryKey: ['horse-sales', data.id] });
       queryClient.invalidateQueries({ queryKey: ['horse-sales', 'user', data.userId] });
+      // Track update event
+      horseSaleUpdated({ horse_sale_id: data.id });
     },
   });
 
