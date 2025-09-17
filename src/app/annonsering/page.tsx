@@ -4,25 +4,25 @@ import { CheckIcon } from "@heroicons/react/24/outline";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Nå engasjerte hesteeiere direkte - Stallplass",
+  title: "Bedriftsreklame i søkeresultater – Stallplass",
   description:
-    "Stallplass er Norges største markedsplass for stallplasser og hestetjenester. Med fast månedspris får du direkte synlighet til målgruppen din uten å være avhengig av klikk.",
+    "Bedrifter kan kjøpe synlighet direkte i søkeresultatene på Stallplass. Opprettelse av vanlige annonser (stall, boks, tjenester, hest) er gratis.",
   openGraph: {
-    title: "Nå engasjerte hesteeiere direkte - Stallplass",
+    title: "Bedriftsreklame i søkeresultater – Stallplass",
     description:
-      "Stallplass er Norges største markedsplass for stallplasser og hestetjenester. Med fast månedspris får du direkte synlighet til målgruppen din uten å være avhengig av klikk.",
+      "Bedrifter kan kjøpe synlighet direkte i søkeresultatene på Stallplass. Opprettelse av vanlige annonser (stall, boks, tjenester, hest) er gratis.",
   },
 };
 
 const advertisingPlan = {
-  name: "Synlighet i søkeresultater",
+  name: "Bedriftsreklame i søkeresultater",
   price: "2 499",
   description:
-    "Din annonse vises på tvers av søkeresultatene – utformet profesjonelt og med godt synlig plassering – slik at den når tusenvis av potensielle kunder hver måned.",
+    "Reklamen din vises på tvers av søkeresultatene på Stallplass – designet for høy synlighet – slik at du når relevante hestekjøpere og stallinteresserte hver måned.",
   features: [
-    "Eksponering blant søkende",
-    "Relevant trafikk – uten klikkmålinger",
-    "Målrettet branding til hesteeiere",
+    "Synlighet direkte i søkeresultater",
+    "Relevant trafikk uten avhengighet av klikkmålinger",
+    "Målrettet merkevarebygging mot hesteeiere",
     "Faktureres for 6 måneder av gangen",
     "1 måneds oppsigelsestid før ny periode",
   ],
@@ -37,12 +37,18 @@ export default function AnnonseringPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4 sm:text-5xl">
-              Nå engasjerte hesteeiere direkte – uten å være avhengig av klikk!
+              Bedriftsreklame i søkeresultater – nå hesteeiere direkte
             </h1>
-            <p className="text-lg text-gray-600">
-              Stallplass er Norges største markedsplass for stallplasser og hestetjenester – et sted
-              der hesteinteresserte aktivt søker etter tjenester. Med en fast månedspris
-              får du direkte synlighet til en målgruppe som virkelig betyr noe.
+            <div className="mt-3 max-w-3xl mx-auto">
+              <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                <p className="font-medium">Viktig avklaring</p>
+                <p>
+                  Å opprette vanlige annonser på Stallplass (stall, boks, tjenester, hest til salgs/ønskes kjøpt) er gratis. Denne siden gjelder kun betalt bedriftsreklame som vises tydelig i søkeresultatene.
+                </p>
+              </div>
+            </div>
+            <p className="mt-6 text-lg text-gray-600">
+              Stallplass er Norges største markedsplass for stallplasser og hestetjenester. Med fast månedspris får din bedrift synlighet direkte i søkeresultatene – uten å være avhengig av klikk.
             </p>
             <div className="mt-4">
               <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-sm font-medium text-violet-800 border border-violet-200">
@@ -73,12 +79,13 @@ export default function AnnonseringPage() {
 
               <div className="text-center">
                 <a
-                  href="mailto:hei@stallplass.no?subject=Annonsering%20på%20Stallplass%20-%20Forespørsel"
+                  href="mailto:hei@stallplass.no?subject=Bedriftsreklame%20i%20s%C3%B8keresultater%20%E2%80%93%20Foresp%C3%B8rsel"
                   className="inline-flex items-center justify-center rounded-md bg-violet-600 px-5 py-3 text-white font-medium shadow hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 >
-                  Kontakt oss for annonsering
+                  Kontakt oss for bedriftsreklame
                 </a>
                 <p className="mt-2 text-xs text-gray-600">Bestilling gjøres via e-post</p>
+                <p className="mt-1 text-xs text-gray-600">Gjelder bedriftsreklame – ikke ordinære annonser (de er gratis å opprette)</p>
                 <div className="mt-4 text-left mx-auto max-w-md rounded-lg border border-violet-200 bg-violet-50 p-3">
                   <p className="text-sm font-medium text-gray-900">Fakturering og oppsigelse</p>
                   <p className="text-sm text-gray-700">
@@ -86,6 +93,22 @@ export default function AnnonseringPage() {
                     6-måneders periode begynner.
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Gratis annonsering avklaring + snarveier */}
+          <div className="mt-12">
+            <div className="max-w-3xl mx-auto bg-green-50 rounded-2xl p-6 border border-green-200">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Gratis å opprette ordinære annonser</h3>
+              <p className="text-gray-700 mb-4">
+                Det er gratis å opprette vanlige annonser på Stallplass – for stall, bokser, tjenester og hester (til salgs eller ønskes kjøpt). Bedriftsreklamen på denne siden er et tillegg for dem som ønsker ekstra synlighet i søkeresultatene.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a href="/dashboard" className="text-green-800 underline hover:text-green-900">Opprett stall/stallplass</a>
+                <a href="/dashboard" className="text-green-800 underline hover:text-green-900">Legg ut boks</a>
+                <a href="/dashboard" className="text-green-800 underline hover:text-green-900">Registrer tjeneste</a>
+                <a href="/hest" className="text-green-800 underline hover:text-green-900">Hest til salgs/ønskes kjøpt</a>
               </div>
             </div>
           </div>
