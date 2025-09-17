@@ -43,12 +43,16 @@ export default function AnnonseringPage() {
               <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
                 <p className="font-medium">Viktig avklaring</p>
                 <p>
-                  Å opprette vanlige annonser på Stallplass (stall, boks, tjenester, hest til salgs/ønskes kjøpt) er gratis. Denne siden gjelder kun betalt bedriftsreklame som vises tydelig i søkeresultatene.
+                  Å opprette vanlige annonser på Stallplass (stall, boks, tjenester, hest til
+                  salgs/ønskes kjøpt) er gratis. Denne siden gjelder kun betalt bedriftsreklame som
+                  vises tydelig i søkeresultatene.
                 </p>
               </div>
             </div>
             <p className="mt-6 text-lg text-gray-600">
-              Stallplass er Norges største markedsplass for stallplasser og hestetjenester. Med fast månedspris får din bedrift synlighet direkte i søkeresultatene – uten å være avhengig av klikk.
+              Stallplass er Norges største markedsplass for stallplasser og hestetjenester. Med fast
+              månedspris får din bedrift synlighet direkte i søkeresultatene – uten å være avhengig
+              av klikk.
             </p>
             <div className="mt-4">
               <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-sm font-medium text-violet-800 border border-violet-200">
@@ -62,7 +66,9 @@ export default function AnnonseringPage() {
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">{advertisingPlan.name}</h3>
                 <div className="mb-4 flex items-baseline justify-center gap-2">
-                  <span className="text-4xl font-bold text-violet-700">{advertisingPlan.price}</span>
+                  <span className="text-4xl font-bold text-violet-700">
+                    {advertisingPlan.price}
+                  </span>
                   <span className="text-violet-700">kr/måned</span>
                 </div>
                 <p className="text-gray-700">{advertisingPlan.description}</p>
@@ -85,7 +91,9 @@ export default function AnnonseringPage() {
                   Kontakt oss for bedriftsreklame
                 </a>
                 <p className="mt-2 text-xs text-gray-600">Bestilling gjøres via e-post</p>
-                <p className="mt-1 text-xs text-gray-600">Gjelder bedriftsreklame – ikke ordinære annonser (de er gratis å opprette)</p>
+                <p className="mt-1 text-xs text-gray-600">
+                  Gjelder bedriftsreklame – ikke ordinære annonser (de er gratis å opprette)
+                </p>
                 <div className="mt-4 text-left mx-auto max-w-md rounded-lg border border-violet-200 bg-violet-50 p-3">
                   <p className="text-sm font-medium text-gray-900">Fakturering og oppsigelse</p>
                   <p className="text-sm text-gray-700">
@@ -100,16 +108,14 @@ export default function AnnonseringPage() {
           {/* Gratis annonsering avklaring + snarveier */}
           <div className="mt-12">
             <div className="max-w-3xl mx-auto bg-green-50 rounded-2xl p-6 border border-green-200">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Gratis å opprette ordinære annonser</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Gratis å opprette ordinære annonser
+              </h3>
               <p className="text-gray-700 mb-4">
-                Det er gratis å opprette vanlige annonser på Stallplass – for stall, bokser, tjenester og hester (til salgs eller ønskes kjøpt). Bedriftsreklamen på denne siden er et tillegg for dem som ønsker ekstra synlighet i søkeresultatene.
+                Det er gratis å opprette vanlige annonser på Stallplass – for stall, bokser,
+                tjenester og hester (til salgs eller ønskes kjøpt). Bedriftsreklamen på denne siden
+                er et tillegg for dem som ønsker ekstra synlighet i søkeresultatene.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <a href="/dashboard" className="text-green-800 underline hover:text-green-900">Opprett stall/stallplass</a>
-                <a href="/dashboard" className="text-green-800 underline hover:text-green-900">Legg ut boks</a>
-                <a href="/dashboard" className="text-green-800 underline hover:text-green-900">Registrer tjeneste</a>
-                <a href="/hest" className="text-green-800 underline hover:text-green-900">Hest til salgs/ønskes kjøpt</a>
-              </div>
             </div>
           </div>
 
@@ -156,7 +162,7 @@ export default function AnnonseringPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">✏️ Tekst og innhold</h3>
                   <ul className="space-y-2 text-gray-700">
                     <li>• Overskrift (maks 50 tegn)</li>
-                    <li>• Kort beskrivelse (maks 150 tegn)</li>
+                    <li>• Kort beskrivelse (maks 200 tegn)</li>
                     <li>• Nettside/lenke annonsen skal peke til</li>
                     <li>• Kontaktinformasjon for faktura</li>
                   </ul>
