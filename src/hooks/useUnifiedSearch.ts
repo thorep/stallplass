@@ -101,7 +101,8 @@ export function useInfiniteUnifiedSearch(filters: Omit<UnifiedSearchFilters, 'pa
     getNextPageParam: (lastPage) => {
       return lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined;
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 1 * 1000, // 1 second
+    gcTime: 60 * 1000, // keep in cache 1 minute after last unsubscribe
     retry: 3,
     throwOnError: false,
   });
@@ -134,7 +135,8 @@ export function usePagedUnifiedSearch(filters: UnifiedSearchFilters) {
       }
       return response.json();
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 1 * 1000, // 1 second
+    gcTime: 60 * 1000, // keep in cache 1 minute after last unsubscribe
     retry: 3,
     throwOnError: false,
   });
