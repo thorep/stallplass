@@ -4,19 +4,17 @@ import PriceInline from "@/components/atoms/PriceInline";
 import ChipsList from "@/components/molecules/ChipsList";
 import ContactInfoCard from "@/components/molecules/ContactInfoCard";
 import DetailSectionCard from "@/components/molecules/DetailSectionCard";
-import FavoriteButton from "@/components/molecules/FavoriteButton";
 import FAQDisplay from "@/components/molecules/FAQDisplay";
+import FavoriteButton from "@/components/molecules/FavoriteButton";
 import ImageGallery from "@/components/molecules/ImageGallery";
 import PropertiesList from "@/components/molecules/PropertiesList";
 import ShareButton from "@/components/molecules/ShareButton";
 import StableBoxCard from "@/components/molecules/StableBoxCard";
 import StableServicesSection from "@/components/molecules/StableServicesSection";
-import { Button as AtomButton } from "@/components/ui/button";
 import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { useViewTracking } from "@/services/view-tracking-service";
 import { BoxWithAmenities, StableWithAmenities } from "@/types/stable";
 import { formatDate, formatPrice } from "@/utils/formatting";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -48,14 +46,13 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
     router.push(`/bokser/${boxId}`);
   };
 
-  // All boxes are now publicly available
-  const boxesWithAdvertising = stable.boxes || [];
+  const stableBoxes = stable.boxes ?? [];
 
   // Separate into available and rented boxes
-  const availableBoxes = boxesWithAdvertising.filter((box) =>
+  const availableBoxes = stableBoxes.filter((box) =>
     "availableQuantity" in box ? (box.availableQuantity as number) > 0 : false
   );
-  const rentedBoxes = boxesWithAdvertising.filter((box) =>
+  const rentedBoxes = stableBoxes.filter((box) =>
     "availableQuantity" in box ? (box.availableQuantity as number) === 0 : true
   );
 
@@ -103,7 +100,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 alt={stable.name}
               />
             )}
-
             {/* Basic Info */}
             <DetailSectionCard
               header={
@@ -118,19 +114,16 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                         cadence="perMonth"
                       />
                     )}
-                     <div className="flex gap-2">
-                       <FavoriteButton
-                         entityType="STABLE"
-                         entityId={stable.id}
-                       />
-                       <ShareButton
-                         title={`${stable.name} - Stallplass`}
-                         description={
-                           stable.description ||
-                           `Stall i ${stable.postalPlace || stable.address || ""}`
-                         }
-                       />
-                     </div>
+                    <div className="flex gap-2">
+                      <FavoriteButton entityType="STABLE" entityId={stable.id} />
+                      <ShareButton
+                        title={`${stable.name} - Stallplass`}
+                        description={
+                          stable.description ||
+                          `Stall i ${stable.postalPlace || stable.address || ""}`
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               }
@@ -169,57 +162,18 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
 
               {/* Description */}
               {stable.description && (
-                <p className="text-body-sm text-gray-700 leading-relaxed mt-4">{stable.description}</p>
+                <p className="text-body-sm text-gray-700 leading-relaxed mt-4">
+                  {stable.description}
+                </p>
               )}
             </DetailSectionCard>
-
             {/* Amenities */}
             {stable.amenities && stable.amenities.length > 0 && (
               <DetailSectionCard>
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">Fasiliteter</h2>
-                <ChipsList items={stable.amenities.map((a) => a.amenity.name)} maxVisible={3} />
+                <ChipsList items={stable.amenities.map((a) => a.amenity.name)} maxVisible={100} />
               </DetailSectionCard>
             )}
-
-            {/* Owner Warning - Boxes Not Visible */}
-            {isOwner &&
-              stable.boxes &&
-              stable.boxes.length > 0 &&
-              boxesWithAdvertising.length === 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 md:p-8">
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-h4 text-amber-800 mb-2">
-                        Dine bokser er ikke synlige for andre brukere
-                      </h3>
-                      <p className="text-amber-700 text-body-sm mb-4">
-                        Boksene dine vises ikke i søkeresultater fordi annonsering ikke er aktiv.
-                        Andre brukere kan ikke se eller kontakte deg om ledige bokser.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <AtomButton
-                          variant="default"
-                          className="bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
-                          onClick={() => router.push("/dashboard")}
-                        >
-                          Aktiver annonsering i dashboard
-                        </AtomButton>
-                        <AtomButton
-                          variant="outline"
-                          className="border-amber-300 text-amber-800 hover:bg-amber-100"
-                          onClick={() => router.push("/priser")}
-                        >
-                          Se priser
-                        </AtomButton>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
             {/* Available Boxes */}
             {availableBoxes.length > 0 && (
               <DetailSectionCard>
@@ -244,7 +198,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </div>
               </DetailSectionCard>
             )}
-
             {/* Rented Boxes (with active advertising) */}
             {rentedBoxes.length > 0 && (
               <DetailSectionCard>
@@ -269,9 +222,8 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </div>
               </DetailSectionCard>
             )}
-
             {/* No Boxes Available Message */}
-            {(!stable.boxes || stable.boxes.length === 0) && (
+            {stableBoxes.length === 0 && (
               <DetailSectionCard>
                 <h2 className="text-h4 text-gray-900 mb-6 font-bold">Stallplasser</h2>
                 <div className="text-center py-12">
@@ -286,24 +238,6 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                 </div>
               </DetailSectionCard>
             )}
-
-            {/* No Boxes with Active Advertising Message */}
-            {stable.boxes && stable.boxes.length > 0 && boxesWithAdvertising.length === 0 && (
-              <DetailSectionCard>
-                <h2 className="text-h4 text-gray-900 mb-6 font-bold">Stallplasser</h2>
-                <div className="text-center py-12">
-                  <div className="text-gray-500 text-sm mb-2">
-                    Ingen bokser har aktiv annonsering for øyeblikket.
-                  </div>
-                  {isOwner && (
-                    <div className="text-sm text-gray-400">
-                      Aktiver annonsering for dine bokser i dashboard.
-                    </div>
-                  )}
-                </div>
-              </DetailSectionCard>
-            )}
-
             {/* FAQ Section */}
             {stable.faqs && stable.faqs.length > 0 && <FAQDisplay faqs={stable.faqs} />}
           </div>
@@ -338,7 +272,7 @@ export default function StableLandingClient({ stable }: StableLandingClientProps
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 font-medium">Totalt bokser:</span>
                     <span className="font-bold text-sm text-gray-900">
-                      {stable.boxes?.length || 0}
+                      {stableBoxes.length}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">

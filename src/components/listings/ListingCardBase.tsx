@@ -175,6 +175,7 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
             <h3 className="font-semibold text-base md:text-lg text-foreground line-clamp-2">
               {title}
             </h3>
+
             {(actions?.favorite || actions?.share) && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 {actions?.favorite && (
@@ -232,11 +233,9 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
               ) : null}
             </div>
           )}
-
           {description ? (
             <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
           ) : null}
-
           {(baseChips.length > 0 || amenitiesExtra > 0) && (
             <div className="flex flex-wrap gap-2 pt-1">
               {baseChips.map((chip, i) => (

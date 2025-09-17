@@ -3,7 +3,7 @@
 import ListingCardBase from "@/components/listings/ListingCardBase";
 import { BoxWithStablePreview } from "@/types/stable";
 import { formatLocationDisplay } from "@/utils/formatting";
-import { MapPin, Tag } from "lucide-react";
+import { House, MapPin, Tag } from "lucide-react";
 import React from "react";
 
 interface BoxListingCardProps {
@@ -15,8 +15,8 @@ interface BoxListingCardProps {
 function BoxListingCard({
   box,
   highlightedBoxAmenityIds = [],
-  // highlightedStableAmenityIds is currently unused
-}: BoxListingCardProps) {
+}: // highlightedStableAmenityIds is currently unused
+BoxListingCardProps) {
   const availableQuantity =
     ("availableQuantity" in box ? (box.availableQuantity as number) : 0) ?? 0;
   const isAvailable = availableQuantity > 0;
@@ -28,11 +28,15 @@ function BoxListingCard({
   ];
 
   const metaItems: { icon: React.ReactNode; label: string }[] = [
-    { icon: <MapPin size={16} className="text-gray-500" />, label: formatLocationDisplay(box) },
+    {
+      icon: <House size={16} className="text-gray-500" />,
+      label: box.stable.name,
+    },
     {
       icon: <Tag size={16} className="text-gray-500" />,
       label: box.boxType === "BOKS" ? "Boks" : "Utegang",
     },
+    { icon: <MapPin size={16} className="text-gray-500" />, label: formatLocationDisplay(box) },
   ];
   const price = {
     value: new Intl.NumberFormat("nb-NO").format(box.price),
