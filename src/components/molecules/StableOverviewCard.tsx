@@ -80,7 +80,7 @@ export default function StableOverviewCard({
             <div className="mt-3">
               <h4 className="text-sm font-medium text-slate-700 mb-2">Stall-fasiliteter:</h4>
               <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                {stable.amenities.slice(0, 6).map((amenityLink) => (
+                {stable.amenities.map((amenityLink) => (
                   <span
                     key={amenityLink.amenity.id}
                     className="inline-block px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-medium whitespace-nowrap"
@@ -88,11 +88,6 @@ export default function StableOverviewCard({
                     {amenityLink.amenity.name}
                   </span>
                 ))}
-                {stable.amenities.length > 6 && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-slate-100 text-slate-600 text-xs">
-                    +{stable.amenities.length - 6} flere
-                  </span>
-                )}
               </div>
             </div>
           )}

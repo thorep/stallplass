@@ -143,7 +143,7 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
               {box.amenities && box.amenities.length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-lg font-semibold text-gray-900 mb-6">Boks fasiliteter</h3>
-                  <ChipsList items={box.amenities.map((a) => a.amenity.name)} maxVisible={3} />
+                  <ChipsList items={box.amenities.map((a) => a.amenity.name)} maxVisible={null} />
                 </div>
               )}
 
@@ -153,7 +153,7 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
                   <h3 className="text-lg font-semibold text-gray-900 mb-6">Stall fasiliteter</h3>
                   <ChipsList
                     items={box.stable.amenities.map((a) => a.amenity.name)}
-                    maxVisible={3}
+                    maxVisible={null}
                   />
                 </div>
               )}

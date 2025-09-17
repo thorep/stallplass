@@ -64,7 +64,6 @@ export default function StableCard({ stable }: StableCardProps) {
             {stable.amenities && stable.amenities.length > 0 ? (
               <>
                 {stable.amenities
-                  .slice(0, 3)
                   .map((amenityRelation: { amenity: { name: string } }, index: number) => (
                     <span
                       key={index}
@@ -73,11 +72,6 @@ export default function StableCard({ stable }: StableCardProps) {
                       {amenityRelation.amenity.name}
                     </span>
                   ))}
-                {stable.amenities.length > 3 && (
-                  <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                    +{stable.amenities.length - 3} mer
-                  </span>
-                )}
               </>
             ) : (
               <span className="text-xs text-gray-500">Ingen fasiliteter oppgitt</span>

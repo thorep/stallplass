@@ -105,29 +105,15 @@ export default function StableBoxCard({
                 🐎 {formatHorseSize(box.maxHorseSize)}
               </span>
             )}
-            {box.amenities && box.amenities.length > 0 && (
-              <>
-                {(showAllAmenities ? box.amenities : box.amenities.slice(0, 3)).map(
-                  (amenityLink) => (
-                    <span
-                      key={amenityLink.amenity.id}
-                      className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-xs font-medium text-gray-700"
-                    >
-                      {amenityLink.amenity.name}
-                    </span>
-                  )
-                )}
-                {box.amenities.length > 3 && (
-                  <button
-                    onClick={() => setShowAllAmenities(!showAllAmenities)}
-                    className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-xs font-medium text-blue-700 cursor-pointer"
-                    data-cy="toggle-amenities-button"
-                  >
-                    {showAllAmenities ? "Vis færre" : `+${box.amenities.length - 3} flere`}
-                  </button>
-                )}
-              </>
-            )}
+            {box.amenities && box.amenities.length > 0 &&
+              box.amenities.map((amenityLink) => (
+                <span
+                  key={amenityLink.amenity.id}
+                  className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-xs font-medium text-gray-700"
+                >
+                  {amenityLink.amenity.name}
+                </span>
+              ))}
           </div>
         </div>
       </div>
