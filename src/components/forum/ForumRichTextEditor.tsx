@@ -1,67 +1,66 @@
-'use client';
+"use client";
 
-import { useState, useCallback, forwardRef, useImperativeHandle, useRef } from 'react';
-import { 
-  ToggleButton, 
-  ToggleButtonGroup, 
-  Divider,
-  Stack,
-  Box,
-  Typography,
-  IconButton,
-  Tooltip,
-  Paper
-} from '@mui/material';
-import { 
-  FormatBold, 
-  FormatItalic, 
-  FormatUnderlined,
-  FormatListBulleted, 
-  FormatListNumbered, 
-  FormatQuote,
-  Undo,
-  Redo,
+import { cn } from "@/lib/utils";
+import { ERROR_MESSAGES, IMAGE_CONSTRAINTS } from "@/utils/constants";
+import { compressImage } from "@/utils/image-compression";
+import {
   EmojiEmotions,
-  Image as ImageIcon
-} from '@mui/icons-material';
-import { cn } from '@/lib/utils';
-import { IMAGE_CONSTRAINTS, ERROR_MESSAGES } from '@/utils/constants';
-import { compressImage } from '@/utils/image-compression';
+  FormatBold,
+  FormatItalic,
+  FormatListBulleted,
+  FormatListNumbered,
+  FormatQuote,
+  FormatUnderlined,
+  Image as ImageIcon,
+  Redo,
+  Undo,
+} from "@mui/icons-material";
+import {
+  Box,
+  Divider,
+  IconButton,
+  Paper,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from "react";
 
 // Lexical imports
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { ListPlugin } from '@lexical/react/LexicalListPlugin';
-import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 
 // Lexical nodes
-import { HeadingNode } from '@lexical/rich-text';
-import { ListNode, ListItemNode } from '@lexical/list';
-import { QuoteNode } from '@lexical/rich-text';
-import { LinkNode } from '@lexical/link';
+import { LinkNode } from "@lexical/link";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 // Custom Image Node for Lexical
-import { ImageNode as CustomImageNode, $createImageNode } from './ImageNode';
+import { $createImageNode, ImageNode as CustomImageNode } from "./ImageNode";
 
 import {
+  $createParagraphNode,
+  $createTextNode,
   $getSelection,
+  $insertNodes,
   $isRangeSelection,
   EditorState,
   FORMAT_TEXT_COMMAND,
-  UNDO_COMMAND,
   REDO_COMMAND,
-  $createParagraphNode,
-  $createTextNode,
-  $insertNodes
-} from 'lexical';
+  UNDO_COMMAND,
+} from "lexical";
 
-import { $createQuoteNode } from '@lexical/rich-text';
-import { INSERT_UNORDERED_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND } from '@lexical/list';
-import { $generateHtmlFromNodes } from '@lexical/html';
+import { $generateHtmlFromNodes } from "@lexical/html";
+import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list";
+import { $createQuoteNode } from "@lexical/rich-text";
 
 interface ForumRichTextEditorProps {
   content: string;
@@ -77,23 +76,22 @@ export interface ForumRichTextEditorRef {
 
 // Fun emoji shortcodes for forum use
 const FORUM_EMOJIS = {
-  ':horse:': '🐴',
-  ':heart:': '❤️',
-  ':smile:': '😊',
-  ':thumbs-up:': '👍',
-  ':unicorn:': '🦄',
-  ':star:': '⭐',
-  ':fire:': '🔥',
-  ':rainbow:': '🌈',
-  ':sparkles:': '✨',
-  ':clap:': '👏',
-  ':thinking:': '🤔',
-  ':laugh:': '😂',
-  ':sad:': '😢',
-  ':angry:': '😡',
-  ':helpful:': '💡'
+  ":horse:": "🐴",
+  ":heart:": "❤️",
+  ":smile:": "😊",
+  ":thumbs-up:": "👍",
+  ":unicorn:": "🦄",
+  ":star:": "⭐",
+  ":fire:": "🔥",
+  ":rainbow:": "🌈",
+  ":sparkles:": "✨",
+  ":clap:": "👏",
+  ":thinking:": "🤔",
+  ":laugh:": "😂",
+  ":sad:": "😢",
+  ":angry:": "😡",
+  ":helpful:": "💡",
 };
-
 
 // Toolbar Component
 function ToolbarPlugin() {
@@ -102,12 +100,12 @@ function ToolbarPlugin() {
   const [showEmojiHelp, setShowEmojiHelp] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFormat = (format: 'bold' | 'italic' | 'underline') => {
+  const handleFormat = (format: "bold" | "italic" | "underline") => {
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
   };
 
-  const handleList = (listType: 'bullet' | 'number') => {
-    if (listType === 'bullet') {
+  const handleList = (listType: "bullet" | "number") => {
+    if (listType === "bullet") {
       editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
     } else {
       editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
@@ -120,7 +118,7 @@ function ToolbarPlugin() {
       if ($isRangeSelection(selection)) {
         const quote = $createQuoteNode();
         const paragraph = $createParagraphNode();
-        paragraph.append($createTextNode(''));
+        paragraph.append($createTextNode(""));
         quote.append(paragraph);
         $insertNodes([quote]);
       }
@@ -136,8 +134,8 @@ function ToolbarPlugin() {
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Kun bildefiler er tillatt');
+    if (!file.type.startsWith("image/")) {
+      alert("Kun bildefiler er tillatt");
       return;
     }
 
@@ -167,20 +165,20 @@ function ToolbarPlugin() {
       editor.update(() => {
         const imageNode = $createImageNode({
           src: base64Image,
-          altText: 'Uploaded image',
-          maxWidth: 400
+          altText: "Uploaded image",
+          maxWidth: 400,
         });
         $insertNodes([imageNode]);
       });
 
-      console.log('Image inserted successfully with Lexical');
+      console.log("Image inserted successfully with Lexical");
     } catch (error) {
-      console.error('Image processing failed:', error);
-      alert('Feil ved behandling av bilde. Prøv igjen.');
+      console.error("Image processing failed:", error);
+      alert("Feil ved behandling av bilde. Prøv igjen.");
     }
 
     // Reset file input
-    event.target.value = '';
+    event.target.value = "";
   };
 
   const insertEmoji = (emoji: string) => {
@@ -193,40 +191,36 @@ function ToolbarPlugin() {
   };
 
   return (
-    <Box 
-      sx={{ 
-        p: 1, 
-        borderBottom: 1, 
-        borderColor: 'divider',
-        backgroundColor: 'grey.50'
+    <Box
+      sx={{
+        p: 1,
+        borderBottom: 1,
+        borderColor: "divider",
+        backgroundColor: "grey.50",
       }}
     >
       <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
         <ToggleButtonGroup
           value={activeFormats}
           size="small"
-          sx={{ '& .MuiToggleButton-root': { px: 1, py: 0.5 } }}
+          sx={{ "& .MuiToggleButton-root": { px: 1, py: 0.5 } }}
         >
-          <ToggleButton
-            value="bold"
-            onClick={() => handleFormat('bold')}
-            sx={{ border: 'none' }}
-          >
+          <ToggleButton value="bold" onClick={() => handleFormat("bold")} sx={{ border: "none" }}>
             <FormatBold fontSize="small" />
           </ToggleButton>
-          
+
           <ToggleButton
             value="italic"
-            onClick={() => handleFormat('italic')}
-            sx={{ border: 'none' }}
+            onClick={() => handleFormat("italic")}
+            sx={{ border: "none" }}
           >
             <FormatItalic fontSize="small" />
           </ToggleButton>
-          
+
           <ToggleButton
             value="underline"
-            onClick={() => handleFormat('underline')}
-            sx={{ border: 'none' }}
+            onClick={() => handleFormat("underline")}
+            sx={{ border: "none" }}
           >
             <FormatUnderlined fontSize="small" />
           </ToggleButton>
@@ -237,29 +231,25 @@ function ToolbarPlugin() {
         <ToggleButtonGroup
           value={activeFormats}
           size="small"
-          sx={{ '& .MuiToggleButton-root': { px: 1, py: 0.5 } }}
+          sx={{ "& .MuiToggleButton-root": { px: 1, py: 0.5 } }}
         >
           <ToggleButton
             value="bulletList"
-            onClick={() => handleList('bullet')}
-            sx={{ border: 'none' }}
+            onClick={() => handleList("bullet")}
+            sx={{ border: "none" }}
           >
             <FormatListBulleted fontSize="small" />
           </ToggleButton>
-          
+
           <ToggleButton
             value="orderedList"
-            onClick={() => handleList('number')}
-            sx={{ border: 'none' }}
+            onClick={() => handleList("number")}
+            sx={{ border: "none" }}
           >
             <FormatListNumbered fontSize="small" />
           </ToggleButton>
-          
-          <ToggleButton
-            value="blockquote"
-            onClick={handleQuote}
-            sx={{ border: 'none' }}
-          >
+
+          <ToggleButton value="blockquote" onClick={handleQuote} sx={{ border: "none" }}>
             <FormatQuote fontSize="small" />
           </ToggleButton>
         </ToggleButtonGroup>
@@ -267,10 +257,7 @@ function ToolbarPlugin() {
         <Divider orientation="vertical" flexItem />
 
         <Tooltip title="Last opp bilde" placement="top">
-          <IconButton
-            size="small"
-            onClick={handleImageUpload}
-          >
+          <IconButton size="small" onClick={handleImageUpload}>
             <ImageIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -279,7 +266,7 @@ function ToolbarPlugin() {
           <IconButton
             size="small"
             onClick={() => setShowEmojiHelp(!showEmojiHelp)}
-            color={showEmojiHelp ? 'primary' : 'default'}
+            color={showEmojiHelp ? "primary" : "default"}
           >
             <EmojiEmotions fontSize="small" />
           </IconButton>
@@ -287,42 +274,36 @@ function ToolbarPlugin() {
 
         <Divider orientation="vertical" flexItem />
 
-        <IconButton
-          size="small"
-          onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
-        >
+        <IconButton size="small" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}>
           <Undo fontSize="small" />
         </IconButton>
-        
-        <IconButton
-          size="small"
-          onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
-        >
+
+        <IconButton size="small" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}>
           <Redo fontSize="small" />
         </IconButton>
       </Stack>
 
       {/* Emoji Help */}
       {showEmojiHelp && (
-        <Box sx={{ mt: 2, p: 2, backgroundColor: 'background.paper', borderRadius: 1 }}>
+        <Box sx={{ mt: 2, p: 2, backgroundColor: "background.paper", borderRadius: 1 }}>
           <Typography className="text-body-sm" sx={{ mb: 1, fontWeight: 500 }}>
             Skriv disse kodene for emojis:
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {Object.entries(FORUM_EMOJIS).map(([code, emoji]) => (
               <Box
                 key={code}
                 onClick={() => insertEmoji(emoji)}
                 sx={{
-                  cursor: 'pointer',
+                  cursor: "pointer",
                   px: 1,
                   py: 0.5,
-                  backgroundColor: 'grey.100',
+                  backgroundColor: "grey.100",
                   borderRadius: 1,
-                  fontSize: '0.8rem',
-                  '&:hover': {
-                    backgroundColor: 'grey.200'
-                  }
+                  fontSize: "0.8rem",
+                  "&:hover": {
+                    backgroundColor: "grey.200",
+                  },
                 }}
               >
                 {emoji} {code}
@@ -337,124 +318,115 @@ function ToolbarPlugin() {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
         onChange={handleFileSelect}
       />
     </Box>
   );
 }
 
-export const ForumRichTextEditor = forwardRef<ForumRichTextEditorRef, ForumRichTextEditorProps>(({ 
-  content, 
-  onChange, 
-  placeholder = 'Skriv ditt innlegg her...', 
-  className,
-  minHeight = 150
-}, ref) => {
+export const ForumRichTextEditor = forwardRef<ForumRichTextEditorRef, ForumRichTextEditorProps>(
+  (
+    { content, onChange, placeholder = "Skriv ditt innlegg her...", className, minHeight = 150 },
+    ref
+  ) => {
+    // Upload all pending images when form is submitted
+    const uploadPendingImages = useCallback(async (): Promise<string> => {
+      // For now, just return the content as-is since we're using base64 temporarily
+      // In the future, we can implement the same logic as before to replace base64 with real URLs
+      return content;
+    }, [content]);
 
-  // Upload all pending images when form is submitted
-  const uploadPendingImages = useCallback(async (): Promise<string> => {
-    // For now, just return the content as-is since we're using base64 temporarily
-    // In the future, we can implement the same logic as before to replace base64 with real URLs
-    return content;
-  }, [content]);
+    // Expose methods to parent component
+    useImperativeHandle(
+      ref,
+      () => ({
+        uploadPendingImages,
+      }),
+      [uploadPendingImages]
+    );
 
-  // Expose methods to parent component
-  useImperativeHandle(ref, () => ({
-    uploadPendingImages
-  }), [uploadPendingImages]);
+    const initialConfig = {
+      namespace: "ForumEditor",
+      theme: {
+        paragraph: "mb-1",
+        quote: "border-l-4 border-l-gray-300 pl-4 ml-0 italic text-gray-600",
+        list: {
+          ul: "list-disc pl-4",
+          ol: "list-decimal pl-4",
+        },
+      },
+      onError: (error: Error) => {
+        console.error("Lexical error:", error);
+      },
+      nodes: [HeadingNode, ListNode, ListItemNode, QuoteNode, LinkNode, CustomImageNode],
+    };
 
-  const initialConfig = {
-    namespace: 'ForumEditor',
-    theme: {
-      paragraph: 'mb-1',
-      quote: 'border-l-4 border-l-gray-300 pl-4 ml-0 italic text-gray-600',
-      list: {
-        ul: 'list-disc pl-4',
-        ol: 'list-decimal pl-4',
-      }
-    },
-    onError: (error: Error) => {
-      console.error('Lexical error:', error);
-    },
-    nodes: [
-      HeadingNode,
-      ListNode,
-      ListItemNode,
-      QuoteNode,
-      LinkNode,
-      CustomImageNode
-    ]
-  };
+    // Content change handler component that has access to editor context
+    function OnChangeHandler({ onChange }: { onChange: (content: string) => void }) {
+      const [editor] = useLexicalComposerContext();
 
-// Content change handler component that has access to editor context
-function OnChangeHandler({ onChange }: { onChange: (content: string) => void }) {
-  const [editor] = useLexicalComposerContext();
-  
-  const handleChange = (editorState: EditorState) => {
-    editorState.read(() => {
-      const htmlString = $generateHtmlFromNodes(editor, null);
-      onChange(htmlString);
-    });
-  };
+      const handleChange = (editorState: EditorState) => {
+        editorState.read(() => {
+          const htmlString = $generateHtmlFromNodes(editor, null);
+          onChange(htmlString);
+        });
+      };
 
-  return <OnChangePlugin onChange={handleChange} />;
-}
+      return <OnChangePlugin onChange={handleChange} />;
+    }
 
-  return (
-    <Paper 
-      variant="outlined" 
-      className={cn("overflow-hidden", className)}
-      sx={{ borderRadius: 2 }}
-    >
-      <LexicalComposer initialConfig={initialConfig}>
-        <ToolbarPlugin />
-        
-        {/* Editor */}
-        <Box 
-          sx={{ 
-            backgroundColor: 'background.paper',
-            minHeight: `${minHeight}px`,
-            '& .editor-input': {
-              outline: 'none',
-              padding: '12px',
+    return (
+      <Paper
+        variant="outlined"
+        className={cn("overflow-hidden", className)}
+        sx={{ borderRadius: 2 }}
+      >
+        <LexicalComposer initialConfig={initialConfig}>
+          <ToolbarPlugin />
+
+          {/* Editor */}
+          <Box
+            sx={{
+              backgroundColor: "background.paper",
               minHeight: `${minHeight}px`,
-            },
-            '& .editor-placeholder': {
-              color: 'text.disabled',
-              pointerEvents: 'none',
-              position: 'absolute',
-              top: '12px',
-              left: '12px'
-            }
-          }}
-        >
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable 
-                className="editor-input"
-                style={{ 
-                  minHeight: `${minHeight}px`,
-                  outline: 'none'
-                }}
-              />
-            }
-            placeholder={
-              <div className="editor-placeholder">
-                {placeholder}
-              </div>
-            }
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          
-          <OnChangeHandler onChange={onChange} />
-          <HistoryPlugin />
-          <ListPlugin />
-          <LinkPlugin />
-        </Box>
-      </LexicalComposer>
-    </Paper>
-  );
-});
+              "& .editor-input": {
+                outline: "none",
+                padding: "12px",
+                minHeight: `${minHeight}px`,
+              },
+              "& .editor-placeholder": {
+                color: "text.disabled",
+                pointerEvents: "none",
+                position: "absolute",
+                top: "12px",
+                left: "12px",
+              },
+            }}
+          >
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  className="editor-input"
+                  style={{
+                    minHeight: `${minHeight}px`,
+                    outline: "none",
+                  }}
+                />
+              }
+              // placeholder={<div className="editor-placeholder">{placeholder}</div>}
+              ErrorBoundary={LexicalErrorBoundary}
+            />
 
-ForumRichTextEditor.displayName = 'ForumRichTextEditor';
+            <OnChangeHandler onChange={onChange} />
+            <HistoryPlugin />
+            <ListPlugin />
+            <LinkPlugin />
+          </Box>
+        </LexicalComposer>
+      </Paper>
+    );
+  }
+);
+
+ForumRichTextEditor.displayName = "ForumRichTextEditor";
