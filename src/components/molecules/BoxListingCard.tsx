@@ -20,7 +20,6 @@ BoxListingCardProps) {
   const availableQuantity =
     ("availableQuantity" in box ? (box.availableQuantity as number) : 0) ?? 0;
   const isAvailable = availableQuantity > 0;
-
   const badgesTopRight = [
     isAvailable
       ? { label: `${availableQuantity} ledig`, tone: "success" as const }

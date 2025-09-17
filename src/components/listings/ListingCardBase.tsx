@@ -145,13 +145,11 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
               <span className="text-sm">Ingen bilder</span>
             </div>
           )}
-
           {showImageCount && (
             <span className="absolute left-3 top-3 rounded-full bg-black/70 text-white text-xs px-2 py-1">
               {imageCount} {bilderLabel}
             </span>
           )}
-
           {topBadges.length > 0 && (
             <div className="absolute right-3 top-3 flex gap-2">
               {topBadges.map((b, i) => (
@@ -209,7 +207,6 @@ export default function ListingCardBase(props: ListingCardBaseProps) {
               </div>
             )}
           </div>
-
           {meta.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
               {meta.slice(0, 4).map((item, idx) => (

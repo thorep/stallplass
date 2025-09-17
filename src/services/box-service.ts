@@ -649,12 +649,20 @@ export async function searchBoxes(filters: BoxFilters = {}): Promise<BoxWithStab
     }
 
     // Transform to match expected BoxWithStablePreview type
+    // Additionally, expose location fields at top-level (address/postalPlace/municipalities/counties)
+    // so components that read location from the box object (not only box.stable) can render it.
     return boxes.map(box => {
       const transformedBox: BoxWithStablePreview = {
         ...box,
         amenities: box.box_amenity_links.map((link) => ({
           amenity: link.box_amenities
         })),
+        // Top-level location fields for BoxListingCard/formatLocationDisplay
+        address: box.stables.address || null,
+        postalPlace: box.stables.postalPlace || null,
+        // Keep full prisma types here to satisfy BoxWithStablePreview's municipalities/counties types
+        municipalities: box.stables.municipalities || null,
+        counties: box.stables.counties || null,
         stable: {
           id: box.stables.id,
           name: box.stables.name,
@@ -906,6 +914,4 @@ export async function updateBoxAvailability(
     throw new Error(`Failed to update box availability: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
-
-
 

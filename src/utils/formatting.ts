@@ -194,7 +194,6 @@ export function formatStableLocation(stable: {
   if (parts.length > 0) {
     return parts.join(", ");
   }
-
   return "Ukjent lokasjon";
 }
 
@@ -247,9 +246,7 @@ export function generateStableLocation(addressData: {
     // Full address format
     if (municipality && municipality !== poststed) {
       // Case: "Address 12, 3214 Stavern, Larvik, Vestfold"
-      return `${address}, ${postal_code} ${poststed}, ${
-        fylke?.navn || ""
-      }`.replace(/, $/, "");
+      return `${address}, ${postal_code} ${poststed}, ${fylke?.navn || ""}`.replace(/, $/, "");
     } else {
       // Case: "Albatrossveien 28C, 3212 Sandefjord, Vestfold"
       return `${address}, ${postal_code} ${poststed}, ${fylke?.navn || ""}`.replace(/, $/, "");
@@ -283,9 +280,7 @@ export function formatUpdatedAtDisplay(date: Date | string): string {
       return `Oppdatert for ${hours} ${hours === 1 ? "time" : "t"} siden`;
     }
     const minutes = Math.max(1, Math.floor(diffMs / minute));
-    return minutes <= 1
-      ? "Oppdatert nå nettopp"
-      : `Oppdatert for ${minutes} min siden`;
+    return minutes <= 1 ? "Oppdatert nå nettopp" : `Oppdatert for ${minutes} min siden`;
   }
 
   return `Oppdatert ${formatShortNorDate(d)}`;
