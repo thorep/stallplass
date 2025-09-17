@@ -350,13 +350,18 @@ async function createStableHandler(request: NextRequest) {
     // Server-side analytics: stable_created
     try {
       const ph = getPostHogServer();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (ph as any).capture?.({
+      // Support both real PostHog and mock interface from getPostHogServer
+      const capture = (ph as { capture?: (props: Record<string, unknown>) => void }).capture;
+      capture?.({
         distinctId: profileId,
         event: 'stable_created',
         properties: {
           stable_id: stable.id,
-          location: (stable as any)?.municipality || (stable as any)?.poststed || (stable as any)?.location || undefined,
+          // Prefer municipality/poststed names when available
+          location: (stable as { municipality?: string | null; poststed?: string | null; location?: string | null }).municipality
+            || (stable as { municipality?: string | null; poststed?: string | null; location?: string | null }).poststed
+            || (stable as { municipality?: string | null; poststed?: string | null; location?: string | null }).location
+            || undefined,
           timestamp: new Date().toISOString(),
         },
       });

@@ -1,5 +1,6 @@
 import { prisma } from "@/services/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { checkProfileIsAdmin } from "@/services/admin-service";
 import HorseDetailClient from "@/components/horses/HorseDetailClient";
 import { notFound } from "next/navigation";
 
@@ -33,11 +34,12 @@ export default async function HorseDetailPage({ params }: HorseDetailPageProps) 
     notFound();
   }
 
-  // Check if user has access to this horse
+  // Check if user has access to this horse, allow admins to bypass
   const isOwner = horse.ownerId === userData.user.id;
-  const hasAccess = isOwner || horse.horseShares.some((share) => share.sharedWithId === userData.user.id);
+  const hasShare = horse.horseShares.some((share) => share.sharedWithId === userData.user.id);
+  const isAdmin = await checkProfileIsAdmin(userData.user.id);
 
-  if (!hasAccess) {
+  if (!isOwner && !hasShare && !isAdmin) {
     notFound();
   }
 

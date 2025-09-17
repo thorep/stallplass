@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { useRouter } from "next/navigation";
 
 export interface AdminHorse {
   id: string;
@@ -41,6 +42,7 @@ export interface AdminHorse {
   _count: {
     customLogs: number;
     horseShares: number;
+    budget_items: number;
   };
 }
 
@@ -49,6 +51,7 @@ interface HorsesAdminProps {
 }
 
 export function HorsesAdmin({ initialHorses = [] }: HorsesAdminProps) {
+  const router = useRouter();
   const { data: horses = initialHorses, isLoading, error } = useAdminHorses();
 
   if (isLoading && !horses?.length) {
@@ -131,12 +134,18 @@ export function HorsesAdmin({ initialHorses = [] }: HorsesAdminProps) {
               <TableCell>Detaljer</TableCell>
               <TableCell>Logger</TableCell>
               <TableCell>Delinger</TableCell>
+              <TableCell>Budsjett</TableCell>
               <TableCell>Opprettet</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {horses?.map((horse: AdminHorse) => (
-              <TableRow key={horse.id}>
+              <TableRow 
+                key={horse.id}
+                hover
+                sx={{ cursor: 'pointer' }}
+                onClick={() => router.push(`/mine-hester/${horse.id}`)}
+              >
                 <TableCell>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Avatar sx={{ bgcolor: "primary.main", width: 40, height: 40 }}>
@@ -201,6 +210,14 @@ export function HorsesAdmin({ initialHorses = [] }: HorsesAdminProps) {
                     label={horse._count.horseShares}
                     size="small"
                     color={horse._count.horseShares > 0 ? "info" : "default"}
+                  />
+                </TableCell>
+
+                <TableCell>
+                  <Chip
+                    label={horse._count.budget_items}
+                    size="small"
+                    color={horse._count.budget_items > 0 ? "warning" : "default"}
                   />
                 </TableCell>
 

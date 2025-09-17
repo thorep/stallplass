@@ -192,7 +192,17 @@ export default function ContactInfoCard({
                 </Box>
               )}
 
-              <Box flex={1}>
+              <Box
+                flex={1}
+                onClick={() => {
+                  if (entityType === "box") {
+                    // On box pages, clicking the entity name should navigate to its stable
+                    router.push(`/staller/${entityId}`);
+                  }
+                }}
+                sx={{ cursor: entityType === "box" ? "pointer" : "default" }}
+                data-cy={entityType === "box" ? "contact-entity-stable-link" : undefined}
+              >
                 <Typography
                   variant="subtitle2"
                   className="text-body-sm"
@@ -203,7 +213,7 @@ export default function ContactInfoCard({
                 <Typography
                   variant="body2"
                   className="text-body-sm"
-                  sx={{ fontWeight: 500, color: "rgb(75 85 99)" }}
+                  sx={{ fontWeight: 500, color: "rgb(75 85 99)", textDecoration: entityType === "box" ? "underline" : "none" }}
                 >
                   {entityName}
                 </Typography>

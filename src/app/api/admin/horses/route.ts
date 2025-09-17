@@ -27,6 +27,7 @@ export async function GET() {
           select: {
             customLogs: true,
             horseShares: true,
+            budget_items: true,
           }
         }
       },

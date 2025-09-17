@@ -179,8 +179,8 @@ export default function BoxDetailClient({ box, user }: BoxDetailClientProps) {
               {/* Contact Info */}
               <ContactInfoCard
                 entityType="box"
-                entityId={box.id}
-                entityName={box.name}
+                entityId={box.stable.id}
+                entityName={box.stable.name}
                 entityOwnerId={box.stable.owner?.id}
                 ownerNickname={box.stable.owner?.nickname}
                 address={box.stable.location}
