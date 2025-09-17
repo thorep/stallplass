@@ -53,7 +53,7 @@ export const VALIDATION_LIMITS = {
 
 // Image constraints
 export const IMAGE_CONSTRAINTS = {
-  MAX_FILE_SIZE: 4 * 1024 * 1024, // 4MB (Vercel Hobby plan limit is 4.5MB)
+  MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB application limit (Pro plan; adjust if needed)
   ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
   MAX_IMAGES_PER_STABLE: 10,
   MAX_IMAGES_PER_BOX: 5,
@@ -123,7 +123,7 @@ export const ERROR_MESSAGES = {
   UNAUTHORIZED: 'Du er ikke autorisert til å utføre denne handlingen.',
   NOT_FOUND: 'Ressursen ble ikke funnet.',
   VALIDATION: 'Vennligst rett opp feilene i skjemaet.',
-  IMAGE_TOO_LARGE: 'Bildet er for stort. Maksimal størrelse er 4MB.',
+  IMAGE_TOO_LARGE: 'Bildet er for stort. Maksimal størrelse er 5MB.',
   INVALID_FILE_TYPE: 'Ugyldig filtype. Kun JPEG, PNG og WebP er tillatt.',
 } as const;
 

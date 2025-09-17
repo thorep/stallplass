@@ -19,7 +19,7 @@ interface CompressionResult {
  * We'll resize to max 1920px which covers both use cases well
  */
 const DEFAULT_COMPRESSION_OPTIONS = {
-  maxSizeMB: IMAGE_CONSTRAINTS.MAX_FILE_SIZE / (1024 * 1024), // Use our 4MB limit
+  maxSizeMB: IMAGE_CONSTRAINTS.MAX_FILE_SIZE / (1024 * 1024), // Use our 5MB limit
   maxWidthOrHeight: 1920, // Good for both mobile and laptop viewing
   useWebWorker: true, // Use web worker for better performance
   maxIteration: 10, // Try up to 10 times to get under size limit
@@ -131,7 +131,7 @@ export async function compressImages(
  * @param maxSizeMB - Maximum size in MB (default: 4MB)
  * @returns True if file needs compression
  */
-export function needsCompression(file: File, maxSizeMB: number = 4): boolean {
+export function needsCompression(file: File, maxSizeMB: number = 5): boolean {
   const sizeMB = file.size / (1024 * 1024);
   return sizeMB > maxSizeMB;
 }

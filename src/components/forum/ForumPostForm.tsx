@@ -1,59 +1,65 @@
-'use client';
+"use client";
 
-import { useState, useRef } from 'react';
+import { cn } from "@/lib/utils";
+import type {
+  CreateReplyInput,
+  CreateThreadInput,
+  ForumCategory,
+  ForumReply,
+  ForumThread,
+} from "@/types/forum";
+import { Add, Close, Reply, Save, Send } from "@mui/icons-material";
 import {
-  Stack,
-  TextField,
-  Select,
-  MenuItem,
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Collapse,
   FormControl,
   InputLabel,
-  Button,
-  Typography,
-  Chip,
-  Box,
-  Alert,
-  CircularProgress,
+  MenuItem,
   Paper,
-  Avatar,
-  Collapse
-} from '@mui/material';
-import { Add, Close, Send, Save, Reply } from '@mui/icons-material';
-import { cn } from '@/lib/utils';
-import { ForumRichTextEditor, ForumRichTextEditorRef } from './ForumRichTextEditor';
-import { CategoryBadge } from './CategoryBadge';
-import type { ForumCategory, CreateThreadInput, CreateReplyInput, ForumThread, ForumReply } from '@/types/forum';
-import type { User } from '@supabase/supabase-js';
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import type { User } from "@supabase/supabase-js";
+import { useRef, useState } from "react";
+import { CategoryBadge } from "./CategoryBadge";
+import { ForumRichTextEditor, ForumRichTextEditorRef } from "./ForumRichTextEditor";
 
 interface ForumPostFormProps {
   // Mode configuration
-  mode: 'thread' | 'reply';
+  mode: "thread" | "reply";
   threadId?: string; // Required for replies
   categories?: ForumCategory[]; // Required for threads
-  
+
   // User and auth
   user: User | null;
-  
+
   // Form data (for editing)
   initialData?: Partial<ForumThread>;
   isEditing?: boolean;
-  
+
   // Reply-specific props
   quotedPost?: ForumReply | null;
   onClearQuote?: () => void;
-  
+
   // UI configuration
   placeholder?: string;
   autoFocus?: boolean;
   compact?: boolean;
   showAvatar?: boolean;
   hideCategorySelect?: boolean;
-  
+
   // Event handlers
   onSuccess?: (result: ForumThread | ForumReply) => void;
   onCancel?: () => void;
   className?: string;
-  
+
   // Submission functions - passed in to avoid tight coupling
   onSubmitThread?: (data: CreateThreadInput) => Promise<ForumThread>;
   onSubmitReply?: (data: CreateReplyInput) => Promise<ForumReply>;
@@ -64,18 +70,18 @@ function getUserDisplayName(user: User): string {
   const profile = user.user_metadata || {};
   if (profile.nickname) return profile.nickname;
   if (profile.firstname || profile.lastname) {
-    return [profile.firstname, profile.lastname].filter(Boolean).join(' ');
+    return [profile.firstname, profile.lastname].filter(Boolean).join(" ");
   }
-  return user.email?.split('@')[0] || 'Anonym bruker';
+  return user.email?.split("@")[0] || "Anonym bruker";
 }
 
 function getUserInitials(user: User): string {
   const name = getUserDisplayName(user);
   return name
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase())
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase())
     .slice(0, 2)
-    .join('');
+    .join("");
 }
 
 export function ForumPostForm({
@@ -96,16 +102,14 @@ export function ForumPostForm({
   onCancel,
   className,
   onSubmitThread,
-  onSubmitReply
+  onSubmitReply,
 }: ForumPostFormProps) {
   // Form state
-  const [title, setTitle] = useState(initialData?.title || '');
-  const [content, setContent] = useState(initialData?.content || '');
-  const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');
-  const [tags, setTags] = useState<string[]>(
-    initialData?.tags?.map(tag => tag.name) || []
-  );
-  const [newTag, setNewTag] = useState('');
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [content, setContent] = useState(initialData?.content || "");
+  const [categoryId, setCategoryId] = useState(initialData?.categoryId || "");
+  const [tags, setTags] = useState<string[]>(initialData?.tags?.map((tag) => tag.name) || []);
+  const [newTag, setNewTag] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(autoFocus);
@@ -113,122 +117,122 @@ export function ForumPostForm({
   const editorRef = useRef<ForumRichTextEditorRef>(null);
 
   // Derived values
-  const isThread = mode === 'thread';
-  const isReply = mode === 'reply';
-  const selectedCategory = categories.find(cat => cat.id === categoryId);
-  const defaultPlaceholder = isThread 
-    ? 'Skriv ditt innlegg her... Bruk formatting-verktøyene for å gjøre innlegget mer lesbart.'
-    : '';
+  const isThread = mode === "thread";
+  const isReply = mode === "reply";
+  const selectedCategory = categories.find((cat) => cat.id === categoryId);
+  // const defaultPlaceholder = isThread
+  //   ? 'Skriv ditt innlegg her... Bruk formatting-verktøyene for å gjøre innlegget mer lesbart.'
+  //   : '';
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-    
+
     // Thread-specific validation
     if (isThread) {
       if (!title.trim()) {
-        newErrors.title = 'Tittel er påkrevd';
+        newErrors.title = "Tittel er påkrevd";
       } else if (title.trim().length < 3) {
-        newErrors.title = 'Tittelen må være minst 3 tegn';
+        newErrors.title = "Tittelen må være minst 3 tegn";
       } else if (title.trim().length > 200) {
-        newErrors.title = 'Tittelen kan ikke være lengre enn 200 tegn';
+        newErrors.title = "Tittelen kan ikke være lengre enn 200 tegn";
       }
-      
+
       if (!categoryId && !hideCategorySelect) {
-        newErrors.categoryId = 'Kategori er påkrevd';
+        newErrors.categoryId = "Kategori er påkrevd";
       }
     }
-    
+
     // Content validation (both thread and reply)
     if (!content.trim()) {
-      newErrors.content = isThread ? 'Innhold er påkrevd' : 'Svar kan ikke være tomt';
+      newErrors.content = isThread ? "Innhold er påkrevd" : "Svar kan ikke være tomt";
     } else if (content.trim().length < (isThread ? 10 : 3)) {
-      newErrors.content = isThread 
-        ? 'Innholdet må være minst 10 tegn'
-        : 'Svaret må være minst 3 tegn';
+      newErrors.content = isThread
+        ? "Innholdet må være minst 10 tegn"
+        : "Svaret må være minst 3 tegn";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Prevent double submission
     if (isLoading) {
-      console.log('[FORUM FORM] Form already submitting, ignoring duplicate click');
+      console.log("[FORUM FORM] Form already submitting, ignoring duplicate click");
       return;
     }
-    
+
     if (!validateForm()) {
       return;
     }
 
     if (!user) {
-      setErrors({ submit: 'Du må være logget inn' });
+      setErrors({ submit: "Du må være logget inn" });
       return;
     }
 
-    console.log('[FORUM FORM] Starting submission, setting loading state');
+    console.log("[FORUM FORM] Starting submission, setting loading state");
     setIsLoading(true);
-    
+
     try {
       // Upload pending images and get updated content with real URLs
-      const finalContent = editorRef.current 
+      const finalContent = editorRef.current
         ? await editorRef.current.uploadPendingImages()
         : content.trim();
 
       let result;
-      
+
       if (isThread) {
         if (!onSubmitThread) {
-          throw new Error('onSubmitThread function is required for thread mode');
+          throw new Error("onSubmitThread function is required for thread mode");
         }
-        
-        console.log('[FORUM FORM] Preparing thread data:', {
+
+        console.log("[FORUM FORM] Preparing thread data:", {
           categoryId,
           initialDataCategoryId: initialData?.categoryId,
           hideCategorySelect,
-          willSend: categoryId || undefined
+          willSend: categoryId || undefined,
         });
-        
+
         // Ensure categoryId is included when set
         const threadData: CreateThreadInput = {
           title: title.trim(),
           content: finalContent,
           categoryId: categoryId || undefined,
-          tags: tags.length > 0 ? tags : undefined
+          tags: tags.length > 0 ? tags : undefined,
         };
-        
-        console.log('[FORUM FORM] Sending thread data:', threadData);
-        
+
+        console.log("[FORUM FORM] Sending thread data:", threadData);
+
         result = await onSubmitThread(threadData);
       } else {
         if (!onSubmitReply || !threadId) {
-          throw new Error('onSubmitReply function and threadId are required for reply mode');
+          throw new Error("onSubmitReply function and threadId are required for reply mode");
         }
-        
+
         const replyData: CreateReplyInput = {
-          content: finalContent
+          content: finalContent,
         };
-        
+
         result = await onSubmitReply(replyData);
       }
 
       // Reset form
-      setTitle('');
-      setContent('');
-      setCategoryId('');
+      setTitle("");
+      setContent("");
+      setCategoryId("");
       setTags([]);
-      setNewTag('');
+      setNewTag("");
       setErrors({});
       setIsOpen(false);
-      
+
       onSuccess?.(result);
     } catch (error) {
-      console.error('Failed to submit:', error);
+      console.error("Failed to submit:", error);
       setErrors({
-        submit: error instanceof Error ? error.message : 'En feil oppstod'
+        submit: error instanceof Error ? error.message : "En feil oppstod",
       });
     } finally {
       setIsLoading(false);
@@ -239,24 +243,24 @@ export function ForumPostForm({
     const trimmedTag = newTag.trim();
     if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 5) {
       setTags([...tags, trimmedTag]);
-      setNewTag('');
+      setNewTag("");
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleAddTag();
     }
   };
 
   const handleCancel = () => {
-    setTitle('');
-    setContent('');
+    setTitle("");
+    setContent("");
     setErrors({});
     setIsOpen(false);
     onCancel?.();
@@ -281,85 +285,95 @@ export function ForumPostForm({
 
   return (
     <Box className={className}>
-      <Paper 
-        className={cn('p-4', isReply && compact && 'p-3')}
-        sx={{ 
-          borderRadius: 1, 
+      <Paper
+        className={cn("p-4", isReply && compact && "p-3")}
+        sx={{
+          borderRadius: 1,
           boxShadow: 0,
-          border: '1px solid',
-          borderColor: isThread ? 'primary.200' : 'secondary.200',
-          backgroundColor: isThread ? 'primary.100' : 'secondary.100',
-          position: 'relative',
+          border: "1px solid",
+          borderColor: isThread ? "primary.200" : "secondary.200",
+          backgroundColor: isThread ? "primary.100" : "secondary.100",
+          position: "relative",
           opacity: isLoading ? 0.7 : 1,
-          pointerEvents: isLoading ? 'none' : 'auto'
+          pointerEvents: isLoading ? "none" : "auto",
         }}
       >
         {/* Loading overlay */}
         {isLoading && (
           <Box
             sx={{
-              position: 'absolute',
+              position: "absolute",
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
               zIndex: 1000,
-              borderRadius: 1
+              borderRadius: 1,
             }}
           >
             <Stack spacing={2} alignItems="center">
               <CircularProgress size={40} />
               <Typography className="text-body font-medium">
-                {isThread ? 'Oppretter tråd...' : 'Sender svar...'}
+                {isThread ? "Oppretter tråd..." : "Sender svar..."}
               </Typography>
             </Stack>
           </Box>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
             {/* Header - only show for threads or when editing */}
             {(isThread || isEditing || (onCancel && !compact)) && (
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ minHeight: '40px' }}>
-                <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ minHeight: "40px" }}
+              >
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  alignItems="center"
+                  sx={{ flex: 1, minWidth: 0 }}
+                >
                   {isReply && showAvatar && user && (
-                    <Avatar 
-                      sx={{ 
-                        width: 28, 
+                    <Avatar
+                      sx={{
+                        width: 28,
                         height: 28,
-                        backgroundColor: 'secondary.main',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: '0.75rem',
-                        flexShrink: 0
+                        backgroundColor: "secondary.main",
+                        color: "white",
+                        fontWeight: "bold",
+                        fontSize: "0.75rem",
+                        flexShrink: 0,
                       }}
                     >
                       {getUserInitials(user)}
                     </Avatar>
                   )}
-                  
-                  <Typography 
-                    className={cn(
-                      "font-medium",
-                      isThread ? "text-lg" : "text-base"
-                    )}
-                    sx={{ 
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
+
+                  <Typography
+                    className={cn("font-medium", isThread ? "text-lg" : "text-base")}
+                    sx={{
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
                     }}
                   >
-                    {isEditing 
-                      ? (isThread ? 'Rediger tråd' : 'Rediger svar')
-                      : (isThread ? 'Opprett ny tråd' : 'Skriv et svar')
-                    }
+                    {isEditing
+                      ? isThread
+                        ? "Rediger tråd"
+                        : "Rediger svar"
+                      : isThread
+                      ? "Opprett ny tråd"
+                      : "Skriv et svar"}
                   </Typography>
                 </Stack>
-                
+
                 {(onCancel || (isReply && compact)) && (
                   <Button
                     onClick={handleCancel}
@@ -386,13 +400,13 @@ export function ForumPostForm({
                   helperText={errors.title}
                   placeholder="Skriv en beskrivende tittel..."
                   disabled={isLoading}
-                  slotProps={{ 
-                    htmlInput: { maxLength: 200 }
+                  slotProps={{
+                    htmlInput: { maxLength: 200 },
                   }}
                   sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2
-                    }
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
                   }}
                 />
                 <Typography className="text-caption text-gray-500 mt-1">
@@ -421,9 +435,8 @@ export function ForumPostForm({
                         <MenuItem key={category.id} value={category.id}>
                           <Stack direction="row" spacing={1} alignItems="center">
                             <span>
-                              {category.icon || (
-                                category.name.toLowerCase().includes('hest') ? '🐴' : '📋'
-                              )}
+                              {category.icon ||
+                                (category.name.toLowerCase().includes("hest") ? "🐴" : "📋")}
                             </span>
                             <span>{category.name}</span>
                             {category.description && (
@@ -442,7 +455,8 @@ export function ForumPostForm({
                     )}
                   </FormControl>
                 ) : (
-                  categoryId && selectedCategory && (
+                  categoryId &&
+                  selectedCategory && (
                     <Box>
                       <Typography className="text-caption text-gray-600 mb-1">
                         Publiserer i kategori:
@@ -451,7 +465,7 @@ export function ForumPostForm({
                     </Box>
                   )
                 )}
-                
+
                 {!hideCategorySelect && selectedCategory && (
                   <Box>
                     <Typography className="text-caption text-gray-600 mb-1">
@@ -466,10 +480,8 @@ export function ForumPostForm({
             {/* Tags - only for threads */}
             {isThread && (
               <Stack spacing={2}>
-                <Typography className="text-body-sm font-medium">
-                  Tags (valgfritt)
-                </Typography>
-                
+                <Typography className="text-body-sm font-medium">Tags (valgfritt)</Typography>
+
                 <Stack direction="row" spacing={1} flexWrap="wrap">
                   {tags.map((tag) => (
                     <Chip
@@ -479,11 +491,11 @@ export function ForumPostForm({
                       size="small"
                       color="primary"
                       variant="outlined"
-                      sx={{ borderRadius: '1rem' }}
+                      sx={{ borderRadius: "1rem" }}
                     />
                   ))}
                 </Stack>
-                
+
                 {tags.length < 5 && (
                   <Stack direction="row" spacing={1} alignItems="center">
                     <TextField
@@ -495,9 +507,9 @@ export function ForumPostForm({
                       disabled={isLoading}
                       sx={{
                         flexGrow: 1,
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2
-                        }
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                        },
                       }}
                     />
                     <Button
@@ -511,7 +523,7 @@ export function ForumPostForm({
                     </Button>
                   </Stack>
                 )}
-                
+
                 <Typography className="text-caption text-gray-500">
                   Du kan legge til opptil 5 tags for å hjelpe andre med å finne tråden din.
                 </Typography>
@@ -523,33 +535,30 @@ export function ForumPostForm({
               <Box
                 sx={{
                   p: 2,
-                  borderLeft: '4px solid',
-                  borderLeftColor: 'primary.main',
-                  backgroundColor: 'grey.50',
-                  borderRadius: 1
+                  borderLeft: "4px solid",
+                  borderLeftColor: "primary.main",
+                  backgroundColor: "grey.50",
+                  borderRadius: 1,
                 }}
               >
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                   <Stack spacing={1} sx={{ flexGrow: 1 }}>
                     <Typography className="text-caption font-medium text-primary">
-                      Svarer på {quotedPost.author?.nickname || 'Bruker'}:
+                      Svarer på {quotedPost.author?.nickname || "Bruker"}:
                     </Typography>
-                    <Typography 
+                    <Typography
                       className="text-body-sm"
-                      dangerouslySetInnerHTML={{ 
-                        __html: quotedPost.content.length > 200 
-                          ? quotedPost.content.substring(0, 200) + '...'
-                          : quotedPost.content
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          quotedPost.content.length > 200
+                            ? quotedPost.content.substring(0, 200) + "..."
+                            : quotedPost.content,
                       }}
                     />
                   </Stack>
-                  
+
                   {onClearQuote && (
-                    <Button
-                      onClick={onClearQuote}
-                      size="small"
-                      sx={{ minWidth: 'auto', p: 0.5 }}
-                    >
+                    <Button onClick={onClearQuote} size="small" sx={{ minWidth: "auto", p: 0.5 }}>
                       <Close fontSize="small" />
                     </Button>
                   )}
@@ -559,41 +568,34 @@ export function ForumPostForm({
 
             {/* Content editor */}
             <Stack spacing={2}>
-              {isThread && (
-                <Typography className="text-body-sm font-medium">
-                  Innhold *
-                </Typography>
-              )}
-              
+              {isThread && <Typography className="text-body-sm font-medium">Innhold *</Typography>}
+
               <ForumRichTextEditor
                 ref={editorRef}
                 content={content}
                 onChange={setContent}
-                placeholder={placeholder || defaultPlaceholder}
-                minHeight={compact ? 100 : (isThread ? 200 : 150)}
+                // placeholder={placeholder || defaultPlaceholder}
+                minHeight={compact ? 100 : isThread ? 200 : 150}
               />
-              
+
               <Typography className="text-caption text-gray-500">
-                💡 Tips: Bruk bilde-knappen i verktøylinjen for å legge til bilder. Bildene lastes opp når du publiserer innlegget.
+                💡 Tips: Bruk bilde-knappen i verktøylinjen for å legge til bilder. Bildene lastes
+                opp når du publiserer innlegget.
               </Typography>
-              
+
               {errors.content && (
-                <Typography className="text-caption text-red-600">
-                  {errors.content}
-                </Typography>
+                <Typography className="text-caption text-red-600">{errors.content}</Typography>
               )}
             </Stack>
 
             {/* Submit errors */}
             <Collapse in={!!errors.submit}>
-              <Alert severity="error">
-                {errors.submit}
-              </Alert>
+              <Alert severity="error">{errors.submit}</Alert>
             </Collapse>
 
             {/* Action buttons */}
             <Stack direction="row" spacing={2} justifyContent="flex-end">
-              {(onCancel && !isReply) && (
+              {onCancel && !isReply && (
                 <Button
                   onClick={handleCancel}
                   variant="outlined"
@@ -603,7 +605,7 @@ export function ForumPostForm({
                   Avbryt
                 </Button>
               )}
-              
+
               <Button
                 type="submit"
                 variant="contained"
@@ -619,15 +621,22 @@ export function ForumPostForm({
                   )
                 }
                 disabled={isLoading}
-                sx={{ 
+                sx={{
                   borderRadius: 2,
-                  minWidth: 120
+                  minWidth: 120,
                 }}
               >
-                {isLoading 
-                  ? (isEditing ? 'Lagrer...' : (isThread ? 'Oppretter...' : 'Svarer...'))
-                  : (isEditing ? 'Lagre endringer' : (isThread ? 'Opprett tråd' : 'Send svar'))
-                }
+                {isLoading
+                  ? isEditing
+                    ? "Lagrer..."
+                    : isThread
+                    ? "Oppretter..."
+                    : "Svarer..."
+                  : isEditing
+                  ? "Lagre endringer"
+                  : isThread
+                  ? "Opprett tråd"
+                  : "Send svar"}
               </Button>
             </Stack>
           </Stack>

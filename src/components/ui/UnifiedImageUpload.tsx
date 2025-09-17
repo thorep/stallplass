@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useCentralizedUpload, type EntityType } from "@/hooks/useCentralizedUpload";
 import { StorageService } from "@/services/storage-service";
-import { IMAGE_CONSTRAINTS } from "@/utils/constants";
+import { IMAGE_CONSTRAINTS, ERROR_MESSAGES } from "@/utils/constants";
 import { compressImage, isValidImageType } from "@/utils/image-compression";
 import { DragDropContext, Draggable, Droppable, DropResult } from "@hello-pangea/dnd";
 import {
@@ -19,6 +19,8 @@ import {
 import { Button as MuiButton, TextField } from "@mui/material";
 import Image from "next/image";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+
+type UploadError = Error & { uploadDetails?: { status?: number } };
 
 interface ImageData {
   url: string; // Either blob URL (staging) or real URL (uploaded)
@@ -181,14 +183,21 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
             );
 
             return allUploadedUrls;
-          } catch (uploadError) {
-            console.error("[UnifiedImageUpload] Form upload failed:", uploadError);
-            setError(
-              `Feil ved opplasting: ${
-                uploadError instanceof Error ? uploadError.message : "Ukjent feil"
-              }`
-            );
-            throw uploadError;
+          } catch (uploadError: unknown) {
+            const err = uploadError as UploadError;
+            console.error("[UnifiedImageUpload] Form upload failed:", err);
+            // Map known status codes to user-friendly Norwegian messages
+            const status = err.uploadDetails?.status;
+            if (status === 413) {
+              setError(ERROR_MESSAGES.IMAGE_TOO_LARGE);
+            } else {
+              setError(
+                `Feil ved opplasting: ${
+                  err instanceof Error ? err.message : "Ukjent feil"
+                }`
+              );
+            }
+            throw err;
           } finally {
             setIsUploading(false);
           }
@@ -329,13 +338,19 @@ const UnifiedImageUpload = forwardRef<UnifiedImageUploadRef, UnifiedImageUploadP
         if (closeModalAfter) {
           setShowModal(false);
         }
-      } catch (uploadError) {
-        console.error("[UnifiedImageUpload] Upload failed:", uploadError);
-        setError(
-          `Feil ved opplasting: ${
-            uploadError instanceof Error ? uploadError.message : "Ukjent feil"
-          }`
-        );
+      } catch (uploadError: unknown) {
+        const err = uploadError as UploadError;
+        console.error("[UnifiedImageUpload] Upload failed:", err);
+        const status = err.uploadDetails?.status;
+        if (status === 413) {
+          setError(ERROR_MESSAGES.IMAGE_TOO_LARGE);
+        } else {
+          setError(
+            `Feil ved opplasting: ${
+              err instanceof Error ? err.message : "Ukjent feil"
+            }`
+          );
+        }
       } finally {
         setIsUploading(false);
       }

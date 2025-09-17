@@ -5,19 +5,19 @@
     },
     "summary": {
       "tests": 35,
-      "failed": 3,
-      "passed": 32,
+      "failed": 5,
+      "passed": 30,
       "skipped": 0,
       "pending": 0,
       "other": 0,
-      "start": 1757445249373,
-      "stop": 1757445740835
+      "start": 1758042578456,
+      "stop": 1758043040034
     },
     "tests": [
       {
         "name": "create-budget-item creates a new budget item for a horse (mobile default)",
         "status": "passed",
-        "duration": 23018,
+        "duration": 7268,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-budget-item.cy.ts",
@@ -28,7 +28,7 @@
       {
         "name": "create-budget-item creates a new budget item for a horse (desktop 1280x900)",
         "status": "passed",
-        "duration": 7367,
+        "duration": 6061,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-budget-item.cy.ts",
@@ -38,30 +38,48 @@
       },
       {
         "name": "create-horse-sale creates a new horse sale ad (mobile default)",
-        "status": "passed",
-        "duration": 13448,
-        "rawStatus": "passed",
+        "status": "failed",
+        "duration": 12355,
+        "message": "AssertionError: Timed out retrying after 4000ms: expected 1 to be at least 2\n    at fillHorseSaleForm (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:28:5)\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:88:4)",
+        "trace": "AssertionError: Timed out retrying after 4000ms: expected 1 to be at least 2\n    at fillHorseSaleForm (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:28:5)\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:88:4)",
+        "rawStatus": "failed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse-sale.cy.ts",
         "retries": 0,
         "flaky": false,
-        "browser": "electron 136.0.7103.149"
+        "browser": "electron 136.0.7103.149",
+        "attachments": [
+          {
+            "name": "screenshot",
+            "contentType": "image/png",
+            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/create-horse-sale.cy.ts/create-horse-sale -- creates a new horse sale ad (mobile default) (failed).png"
+          }
+        ]
       },
       {
         "name": "create-horse-sale creates a new horse sale ad (desktop 1280x900)",
-        "status": "passed",
-        "duration": 15550,
-        "rawStatus": "passed",
+        "status": "failed",
+        "duration": 14589,
+        "message": "AssertionError: Timed out retrying after 4000ms: expected 1 to be at least 2\n    at fillHorseSaleForm (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:28:5)\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:95:4)",
+        "trace": "AssertionError: Timed out retrying after 4000ms: expected 1 to be at least 2\n    at fillHorseSaleForm (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:28:5)\n    at Context.eval (webpack://stallplass/./cypress/e2e/create-horse-sale.cy.ts:95:4)",
+        "rawStatus": "failed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-horse-sale.cy.ts",
         "retries": 0,
         "flaky": false,
-        "browser": "electron 136.0.7103.149"
+        "browser": "electron 136.0.7103.149",
+        "attachments": [
+          {
+            "name": "screenshot",
+            "contentType": "image/png",
+            "path": "/Users/thorprestboen/Dev/stallplass/cypress/screenshots/create-horse-sale.cy.ts/create-horse-sale -- creates a new horse sale ad (desktop 1280x900) (failed).png"
+          }
+        ]
       },
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable full flow with contact name + phone",
         "status": "passed",
-        "duration": 17914,
+        "duration": 17313,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -72,7 +90,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants no contact info (name/email/phone blank)",
         "status": "passed",
-        "duration": 19269,
+        "duration": 19592,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -83,7 +101,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants only contact name",
         "status": "passed",
-        "duration": 19443,
+        "duration": 23352,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -94,7 +112,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants only phone",
         "status": "passed",
-        "duration": 20677,
+        "duration": 20901,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -105,7 +123,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants only email",
         "status": "passed",
-        "duration": 19772,
+        "duration": 20685,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -116,7 +134,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants without FAQ",
         "status": "passed",
-        "duration": 16365,
+        "duration": 17498,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -127,7 +145,7 @@
       {
         "name": "create-stable responsive [mobile iPhone12] create-stable variants without amenities",
         "status": "passed",
-        "duration": 18401,
+        "duration": 20415,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -138,7 +156,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable full flow with contact name + phone",
         "status": "passed",
-        "duration": 19328,
+        "duration": 21431,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -149,7 +167,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants no contact info (name/email/phone blank)",
         "status": "passed",
-        "duration": 20041,
+        "duration": 21831,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -160,7 +178,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants only contact name",
         "status": "passed",
-        "duration": 20602,
+        "duration": 22365,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -171,7 +189,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants only phone",
         "status": "passed",
-        "duration": 21268,
+        "duration": 21875,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -182,7 +200,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants only email",
         "status": "passed",
-        "duration": 21952,
+        "duration": 22133,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -193,7 +211,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants without FAQ",
         "status": "passed",
-        "duration": 17331,
+        "duration": 16961,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -204,7 +222,7 @@
       {
         "name": "create-stable responsive [desktop 1280x900] create-stable variants without amenities",
         "status": "passed",
-        "duration": 21146,
+        "duration": 20236,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/create-stable.cy.ts",
@@ -215,7 +233,7 @@
       {
         "name": "Login Test should login with default credentials",
         "status": "passed",
-        "duration": 1896,
+        "duration": 1632,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/login-test.cy.ts",
@@ -226,7 +244,7 @@
       {
         "name": "Login Test should login with custom credentials",
         "status": "passed",
-        "duration": 1756,
+        "duration": 1584,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/login-test.cy.ts",
@@ -237,7 +255,7 @@
       {
         "name": "Login Test should login with returnUrl",
         "status": "passed",
-        "duration": 2882,
+        "duration": 2124,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/login-test.cy.ts",
@@ -248,7 +266,7 @@
       {
         "name": " [mobile iPhone12] Search stables pagination [mobile iPhone12] navigates next and previous pages",
         "status": "passed",
-        "duration": 4404,
+        "duration": 2483,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
@@ -259,7 +277,7 @@
       {
         "name": " [desktop 1280x900] Search stables pagination [desktop 1280x900] navigates next and previous pages",
         "status": "passed",
-        "duration": 6000,
+        "duration": 2981,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/search-stables-pagination.cy.ts",
@@ -270,7 +288,7 @@
       {
         "name": "create-horse creates a new horse (mobile default)",
         "status": "passed",
-        "duration": 9253,
+        "duration": 6998,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horses/create-horse.cy.ts",
@@ -281,7 +299,7 @@
       {
         "name": "create-horse creates a new horse (desktop 1280x900)",
         "status": "passed",
-        "duration": 12288,
+        "duration": 9076,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horses/create-horse.cy.ts",
@@ -292,7 +310,7 @@
       {
         "name": "delete-horse deletes a horse (mobile default)",
         "status": "failed",
-        "duration": 23122,
+        "duration": 22738,
         "message": "AssertionError: Timed out retrying after 20000ms: Expected to find element: `[data-cy=\"horses-grid\"]`, but never found it.\n    at deleteHorse (webpack://stallplass/./cypress/e2e/horses/delete-horse.cy.ts:9:56)\n    at Context.eval (webpack://stallplass/./cypress/e2e/horses/delete-horse.cy.ts:36:4)",
         "trace": "AssertionError: Timed out retrying after 20000ms: Expected to find element: `[data-cy=\"horses-grid\"]`, but never found it.\n    at deleteHorse (webpack://stallplass/./cypress/e2e/horses/delete-horse.cy.ts:9:56)\n    at Context.eval (webpack://stallplass/./cypress/e2e/horses/delete-horse.cy.ts:36:4)",
         "rawStatus": "failed",
@@ -312,7 +330,7 @@
       {
         "name": "delete-horse deletes a horse (desktop 1280x900)",
         "status": "failed",
-        "duration": 23636,
+        "duration": 23060,
         "message": "AssertionError: Timed out retrying after 20000ms: Expected to find element: `[data-cy=\"horses-grid\"]`, but never found it.\n    at deleteHorse (webpack://stallplass/./cypress/e2e/horses/delete-horse.cy.ts:9:56)\n    at Context.eval (webpack://stallplass/./cypress/e2e/horses/delete-horse.cy.ts:41:4)",
         "trace": "AssertionError: Timed out retrying after 20000ms: Expected to find element: `[data-cy=\"horses-grid\"]`, but never found it.\n    at deleteHorse (webpack://stallplass/./cypress/e2e/horses/delete-horse.cy.ts:9:56)\n    at Context.eval (webpack://stallplass/./cypress/e2e/horses/delete-horse.cy.ts:41:4)",
         "rawStatus": "failed",
@@ -332,7 +350,7 @@
       {
         "name": "horse-log-categories adds a log to existing horse (mobile default)",
         "status": "passed",
-        "duration": 7997,
+        "duration": 6426,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horses/horse-log-categories.cy.ts",
@@ -343,7 +361,7 @@
       {
         "name": "horse-log-categories adds a log to existing horse (desktop 1280x900)",
         "status": "passed",
-        "duration": 6255,
+        "duration": 5433,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horses/horse-log-categories.cy.ts",
@@ -354,7 +372,7 @@
       {
         "name": "horse-log-categories creates a new category on horse without categories",
         "status": "passed",
-        "duration": 8617,
+        "duration": 6723,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horses/horse-log-categories.cy.ts",
@@ -365,7 +383,7 @@
       {
         "name": "share-horse shares a horse with user2 and verifies user2 can see it",
         "status": "failed",
-        "duration": 7848,
+        "duration": 7278,
         "message": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `[data-cy=\"nav-del\"]`, but never found it.\n    at navigateToSharingTab (webpack://stallplass/./cypress/e2e/horses/share-horse.cy.ts:5:32)\n    at Context.eval (webpack://stallplass/./cypress/e2e/horses/share-horse.cy.ts:61:4)",
         "trace": "AssertionError: Timed out retrying after 4000ms: Expected to find element: `[data-cy=\"nav-del\"]`, but never found it.\n    at navigateToSharingTab (webpack://stallplass/./cypress/e2e/horses/share-horse.cy.ts:5:32)\n    at Context.eval (webpack://stallplass/./cypress/e2e/horses/share-horse.cy.ts:61:4)",
         "rawStatus": "failed",
@@ -385,7 +403,7 @@
       {
         "name": "update-horse updates horse basic information (mobile default)",
         "status": "passed",
-        "duration": 7154,
+        "duration": 6502,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horses/update-horse.cy.ts",
@@ -396,7 +414,7 @@
       {
         "name": "update-horse updates horse physical information (mobile default)",
         "status": "passed",
-        "duration": 7181,
+        "duration": 6219,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horses/update-horse.cy.ts",
@@ -407,7 +425,7 @@
       {
         "name": "update-horse updates horse basic information (desktop 1280x900)",
         "status": "passed",
-        "duration": 8188,
+        "duration": 6761,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horses/update-horse.cy.ts",
@@ -418,7 +436,7 @@
       {
         "name": "update-horse updates horse physical information (desktop 1280x900)",
         "status": "passed",
-        "duration": 7301,
+        "duration": 6180,
         "rawStatus": "passed",
         "type": "e2e",
         "filePath": "cypress/e2e/horses/update-horse.cy.ts",

@@ -1,5 +1,19 @@
 -- Prepare DB state before tests
 
+-- Config: centralize county/municipality used across this script
+DROP TABLE IF EXISTS tmp_test_config;
+CREATE TEMP TABLE tmp_test_config (
+  county_id text,
+  municipality_id text
+) ON COMMIT DROP;
+
+-- Set desired IDs here
+INSERT INTO tmp_test_config (county_id, municipality_id)
+VALUES (
+  'c22b12eb-7938-448a-9d54-69454e501fbf',
+  'fe9480cc-036b-4e4f-8752-73f5d185c31d'
+);
+
 -- 0) Reset: clear stables and prior auto-generated test profiles
 --    Match teardown (afterTests.sql) for a clean slate before seeding.
 TRUNCATE TABLE "stables" RESTART IDENTITY CASCADE;
@@ -23,14 +37,20 @@ DO $$
 DECLARE
   county_exists boolean;
   municipality_exists boolean;
+  cfg_county_id text;
+  cfg_municipality_id text;
 BEGIN
-  SELECT EXISTS(SELECT 1 FROM counties WHERE id = '43758937-d5b9-446a-95bc-a5945e876fd6') INTO county_exists;
-  SELECT EXISTS(SELECT 1 FROM municipalities WHERE id = '4e39e7aa-e5e8-457e-8290-22d846af1b67') INTO municipality_exists;
+  SELECT county_id, municipality_id INTO cfg_county_id, cfg_municipality_id
+  FROM tmp_test_config
+  LIMIT 1;
+
+  SELECT EXISTS(SELECT 1 FROM counties WHERE id = cfg_county_id) INTO county_exists;
+  SELECT EXISTS(SELECT 1 FROM municipalities WHERE id = cfg_municipality_id) INTO municipality_exists;
   IF NOT county_exists THEN
-    RAISE EXCEPTION 'Mangler countyId c22b12eb-7938-448a-9d54-69454e501fbf i counties. Importer locations eller oppdater beforeTests.sql.';
+    RAISE EXCEPTION 'Mangler countyId % i counties. Importer locations eller oppdater beforeTests.sql.', cfg_county_id;
   END IF;
   IF NOT municipality_exists THEN
-    RAISE EXCEPTION 'Mangler municipalityId fe9480cc-036b-4e4f-8752-73f5d185c31d i municipalities. Importer locations eller oppdater beforeTests.sql.';
+    RAISE EXCEPTION 'Mangler municipalityId % i municipalities. Importer locations eller oppdater beforeTests.sql.', cfg_municipality_id;
   END IF;
 END $$;
 
@@ -71,8 +91,8 @@ SELECT
   59.9082077003434::double precision,
   10.7675314857339::double precision,
   '0192',
-  '43758937-d5b9-446a-95bc-a5945e876fd6',
-  '4e39e7aa-e5e8-457e-8290-22d846af1b67',
+  (SELECT county_id FROM tmp_test_config),
+  (SELECT municipality_id FROM tmp_test_config),
   'OSLO',
   ARRAY['http://127.0.0.1:54321/storage/v1/object/public/stableimages/a024a9a4-b4af-4460-8729-1e4b5891dd11/1756636608969-hc65mar4dd9.jpg']::text[],
   '{}'::text[],
@@ -146,8 +166,8 @@ SELECT
   59.9082077003434::double precision,
   10.7675314857339::double precision,
   '0192',
-  '43758937-d5b9-446a-95bc-a5945e876fd6',
-  '4e39e7aa-e5e8-457e-8290-22d846af1b67',
+  (SELECT county_id FROM tmp_test_config),
+  (SELECT municipality_id FROM tmp_test_config),
   'OSLO',
   ARRAY['http://127.0.0.1:54321/storage/v1/object/public/stableimages/a024a9a4-b4af-4460-8729-1e4b5891dd11/1756636608969-hc65mar4dd9.jpg']::text[],
   '{}'::text[],
@@ -193,8 +213,8 @@ SELECT
   59.9082077003434::double precision,
   10.7675314857339::double precision,
   '0192',
-  '43758937-d5b9-446a-95bc-a5945e876fd6',
-  '4e39e7aa-e5e8-457e-8290-22d846af1b67',
+  (SELECT county_id FROM tmp_test_config),
+  (SELECT municipality_id FROM tmp_test_config),
   'OSLO',
   ARRAY['http://127.0.0.1:54321/storage/v1/object/public/stableimages/a024a9a4-b4af-4460-8729-1e4b5891dd11/1756636608969-hc65mar4dd9.jpg']::text[],
   '{}'::text[],

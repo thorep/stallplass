@@ -25,6 +25,8 @@ import {
   Image as ImageIcon
 } from '@mui/icons-material';
 import { cn } from '@/lib/utils';
+import { IMAGE_CONSTRAINTS, ERROR_MESSAGES } from '@/utils/constants';
+import { compressImage } from '@/utils/image-compression';
 
 // Lexical imports
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -139,19 +141,26 @@ function ToolbarPlugin() {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Bildet er for stort. Maksimal størrelse er 5MB');
-      return;
-    }
-
     try {
-      // Convert to base64 for immediate preview
+      // Compress first, then validate size
+      const compressionResult = await compressImage(file, {
+        maxSizeMB: IMAGE_CONSTRAINTS.MAX_FILE_SIZE / (1024 * 1024),
+        maxWidthOrHeight: 1920,
+      });
+
+      const compressedFile = compressionResult.file;
+
+      if (compressedFile.size > IMAGE_CONSTRAINTS.MAX_FILE_SIZE) {
+        alert(ERROR_MESSAGES.IMAGE_TOO_LARGE);
+        return;
+      }
+
+      // Convert compressed file to base64 for immediate preview
       const base64Image = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = reject;
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(compressedFile);
       });
 
       // Insert image into editor
